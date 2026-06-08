@@ -1,0 +1,2 @@
+prompt 1 - você deve desenvolver um sistema web (somente front-end), com o Framework angular sobre o documento enviado, um orquestrador de robôs rpa.
+(o documento contém informações de como planejamos o nosso orquestrador.)
