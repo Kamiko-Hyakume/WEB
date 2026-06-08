@@ -81,6 +81,27 @@ body { background: var(--bg); color: var(--text); font-family: var(--font); font
 .user-name { font-size: 12px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .user-role { font-size: 10px; color: var(--text3); }
 
+/* LOGOUT BTN — MD3 */
+.btn-logout {
+  display: flex; align-items: center; justify-content: center;
+  width: 30px; height: 30px; flex-shrink: 0;
+  background: none; border: none; border-radius: 50%;
+  color: var(--text3); cursor: pointer;
+  transition: color 0.2s, background 0.2s, transform 0.15s, box-shadow 0.2s;
+  position: relative; overflow: hidden;
+}
+.btn-logout svg { width: 16px; height: 16px; display: block; transition: transform 0.2s; }
+/* MD3 state layer */
+.btn-logout::before {
+  content: ''; position: absolute; inset: 0; border-radius: 50%;
+  background: var(--red); opacity: 0; transition: opacity 0.2s;
+}
+.btn-logout:hover { color: var(--red); box-shadow: 0 0 0 8px rgba(240,87,87,0.08); }
+.btn-logout:hover::before { opacity: 0.1; }
+.btn-logout:hover svg { transform: translateX(2px); }
+.btn-logout:active { transform: scale(0.88); box-shadow: 0 0 0 8px rgba(240,87,87,0.14); }
+.btn-logout:active::before { opacity: 0.18; }
+
 /* MAIN */
 .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
 .topbar {
@@ -377,6 +398,13 @@ textarea { resize: vertical; min-height: 80px; }
       <div class="user-name">Admin Woelfer</div>
       <div class="user-role">Administrador</div>
     </div>
+    <button class="btn-logout" ng-click="logout()" title="Sair do sistema">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/>
+        <polyline points="16 17 21 12 16 7"/>
+        <line x1="21" y1="12" x2="9" y2="12"/>
+      </svg>
+    </button>
   </div>
 </nav>
 
@@ -1009,6 +1037,21 @@ angular.module('OrchestratorApp', [])
 .controller('MainCtrl', function($scope, $interval) {
   $scope.page = 'dashboard';
   $scope.modalOpen = false;
+
+  // Lê dados salvos do login (lembrar-me)
+  var savedSession = JSON.parse(localStorage.getItem('rpa_session') || 'null');
+  if (savedSession) {
+    $scope.sessionUser = savedSession.email || savedSession.apikey || 'Admin Woelfer';
+  }
+
+  $scope.logout = function() {
+    // Se não marcou lembrar-me, limpa os dados salvos
+    var lembrar = localStorage.getItem('rpa_lembrar');
+    if (lembrar !== 'true') {
+      localStorage.removeItem('rpa_session');
+    }
+    window.location.href = 'login.html';
+  };
   $scope.terminalOpen = false;
   $scope.buscaEmpresa = '';
   $scope.buscaUsuario = '';

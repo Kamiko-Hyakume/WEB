@@ -1,2 +1,8 @@
 prompt 1 - você deve desenvolver um sistema web (somente front-end), com o Framework angular sobre o documento enviado, um orquestrador de robôs rpa.
 (o documento contém informações de como planejamos o nosso orquestrador.)
+
+prompt 2 - Agora voce deve criar uma tela de login seguindo os padrões estipulados no documento e no padrão ja utilizado no index
+
+prompt 3 - Faça a tela seguir os padrões do Material Design 3(M3) fazendo o texto subir para a borda e tendo um input de exemplo nos campos de email e senha.
+Faça com que o botão "Lembrar-me" realmente salve as informações inseridas. No index altere apenas oque eu falar para não mudar nada do codigo.
+Crie um botão de log out com responsividade com base no M3 que retorne o usuario para a tela de login.
