@@ -1,2 +1,11 @@
 prompt 1 - você deve desenvolver um sistema web (somente front-end), com o Framework angular sobre o documento enviado, um orquestrador de robôs rpa.
 (o documento contém informações de como planejamos o nosso orquestrador.)
+
+prompt 2- Analise o arquivo @trabalho3/index.html e refatore toda a estilização seguindo boas práticas de desenvolvimento front-end (angular) 
+remova qualquer bloco com <style>...</style> e retire os estilos inline, substituindo por class css, os nomes das class tem que fazer sentido 
+com que esta sendo feito, sem alterar a estilização atual, somente passando todo a estilização do html pra um arquivo css, sem alterar logica
+
+prompet 3- Analise o arquivo @trabalho3/index.html e mova toda a lógica presente no template para um arquivo js, seguindo boas práticas de 
+organização e separação de responsabilidades, deixe o html apenas responsável pela exibição das informações, sem alterar nenhuma logica ou 
+comportamento atual, somente mova a logica do html para um arquivo js
+
