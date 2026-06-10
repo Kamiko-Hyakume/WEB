@@ -9,3 +9,9 @@ prompet 3- Analise o arquivo @trabalho3/index.html e mova toda a lógica present
 organização e separação de responsabilidades, deixe o html apenas responsável pela exibição das informações, sem alterar nenhuma logica ou 
 comportamento atual, somente mova a logica do html para um arquivo js
 
+prompt 5 - Agora voce deve criar uma tela de login seguindo os padrões estipulados no documento e no padrão ja utilizado no index
+
+prompt 4 - Faça a tela seguir os padrões do Material Design 3(M3) fazendo o texto subir para a borda e tendo um input de exemplo nos campos de email e senha.
+Faça com que o botão "Lembrar-me" realmente salve as informações inseridas. No index altere apenas oque eu falar para não mudar nada do codigo.
+Crie um botão de log out com responsividade com base no M3 que retorne o usuario para a tela de login.
+
