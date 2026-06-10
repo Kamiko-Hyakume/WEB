@@ -1,1349 +1,918 @@
 <!DOCTYPE html>
 <html lang="pt-BR" ng-app="OrchestratorApp">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Orquestrador RPA 2.0</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.8.3/angular.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.8.3/angular-animate.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
-<style>
-:root {
-  --bg: #0a0c10;
-  --bg2: #111318;
-  --bg3: #181c24;
-  --surface: #1e2330;
-  --surface2: #252b38;
-  --border: rgba(255,255,255,0.07);
-  --border2: rgba(255,255,255,0.13);
-  --text: #e8eaf0;
-  --text2: #8b92a5;
-  --text3: #545c6e;
-  --accent: #4f8ef7;
-  --accent2: #3a6fd4;
-  --green: #22d3a0;
-  --red: #f05757;
-  --amber: #f5a623;
-  --purple: #a78bfa;
-  --cyan: #22d3ee;
-  --font: 'DM Sans', sans-serif;
-  --mono: 'JetBrains Mono', monospace;
-  --r: 8px;
-  --r2: 12px;
-}
-* { margin: 0; padding: 0; box-sizing: border-box; }
-body { background: var(--bg); color: var(--text); font-family: var(--font); font-size: 14px; min-height: 100vh; display: flex; overflow: hidden; }
-
-/* SIDEBAR */
-.sidebar {
-  width: 220px; min-width: 220px; background: var(--bg2); border-right: 1px solid var(--border);
-  display: flex; flex-direction: column; height: 100vh; overflow: hidden;
-}
-.logo {
-  padding: 20px 20px 16px; border-bottom: 1px solid var(--border);
-  display: flex; align-items: center; gap: 10px;
-}
-.logo-icon {
-  width: 32px; height: 32px; background: var(--accent); border-radius: 8px;
-  display: flex; align-items: center; justify-content: center;
-}
-.logo-icon svg { width: 18px; height: 18px; fill: white; }
-.logo-text { font-size: 13px; font-weight: 600; letter-spacing: 0.02em; }
-.logo-sub { font-size: 10px; color: var(--text3); font-family: var(--mono); letter-spacing: 0.05em; }
-
-.nav { padding: 12px 0; flex: 1; overflow-y: auto; }
-.nav-group { margin-bottom: 4px; }
-.nav-label { font-size: 10px; color: var(--text3); font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; padding: 8px 20px 4px; }
-.nav-item {
-  display: flex; align-items: center; gap: 10px; padding: 9px 20px;
-  color: var(--text2); cursor: pointer; transition: all 0.15s; font-size: 13px;
-  border-left: 2px solid transparent; position: relative;
-}
-.nav-item:hover { color: var(--text); background: var(--border); }
-.nav-item.active { color: var(--accent); background: rgba(79,142,247,0.08); border-left-color: var(--accent); }
-.nav-item svg { width: 16px; height: 16px; opacity: 0.7; flex-shrink: 0; }
-.nav-item.active svg { opacity: 1; }
-.nav-badge {
-  margin-left: auto; background: var(--red); color: white; font-size: 10px;
-  font-weight: 600; border-radius: 10px; padding: 1px 6px; font-family: var(--mono);
-}
-.status-dot {
-  width: 6px; height: 6px; border-radius: 50%; background: var(--green);
-  margin-left: auto; box-shadow: 0 0 6px var(--green);
-}
-
-.sidebar-footer {
-  padding: 14px 20px; border-top: 1px solid var(--border);
-  display: flex; align-items: center; gap: 10px;
-}
-.avatar { width: 30px; height: 30px; border-radius: 50%; background: linear-gradient(135deg, var(--accent), var(--purple)); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; color: white; flex-shrink: 0; }
-.user-info { flex: 1; min-width: 0; }
-.user-name { font-size: 12px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.user-role { font-size: 10px; color: var(--text3); }
-
-/* LOGOUT BTN — MD3 */
-.btn-logout {
-  display: flex; align-items: center; justify-content: center;
-  width: 30px; height: 30px; flex-shrink: 0;
-  background: none; border: none; border-radius: 50%;
-  color: var(--text3); cursor: pointer;
-  transition: color 0.2s, background 0.2s, transform 0.15s, box-shadow 0.2s;
-  position: relative; overflow: hidden;
-}
-.btn-logout svg { width: 16px; height: 16px; display: block; transition: transform 0.2s; }
-/* MD3 state layer */
-.btn-logout::before {
-  content: ''; position: absolute; inset: 0; border-radius: 50%;
-  background: var(--red); opacity: 0; transition: opacity 0.2s;
-}
-.btn-logout:hover { color: var(--red); box-shadow: 0 0 0 8px rgba(240,87,87,0.08); }
-.btn-logout:hover::before { opacity: 0.1; }
-.btn-logout:hover svg { transform: translateX(2px); }
-.btn-logout:active { transform: scale(0.88); box-shadow: 0 0 0 8px rgba(240,87,87,0.14); }
-.btn-logout:active::before { opacity: 0.18; }
-
-/* MAIN */
-.main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
-.topbar {
-  height: 52px; background: var(--bg2); border-bottom: 1px solid var(--border);
-  display: flex; align-items: center; padding: 0 24px; gap: 16px; flex-shrink: 0;
-}
-.topbar-title { font-size: 15px; font-weight: 500; flex: 1; }
-.topbar-actions { display: flex; align-items: center; gap: 8px; }
-.btn {
-  display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px;
-  border-radius: var(--r); font-size: 13px; font-weight: 500; cursor: pointer;
-  border: none; font-family: var(--font); transition: all 0.15s;
-}
-.btn-primary { background: var(--accent); color: white; }
-.btn-primary:hover { background: var(--accent2); }
-.btn-ghost { background: transparent; color: var(--text2); border: 1px solid var(--border2); }
-.btn-ghost:hover { background: var(--surface); color: var(--text); }
-.btn-danger { background: rgba(240,87,87,0.15); color: var(--red); border: 1px solid rgba(240,87,87,0.3); }
-.btn-success { background: rgba(34,211,160,0.12); color: var(--green); border: 1px solid rgba(34,211,160,0.25); }
-.btn svg { width: 14px; height: 14px; }
-
-.content { flex: 1; overflow-y: auto; padding: 24px; }
-
-/* CARDS */
-.kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 24px; }
-.kpi-card {
-  background: var(--surface); border: 1px solid var(--border); border-radius: var(--r2);
-  padding: 16px 18px; position: relative; overflow: hidden;
-}
-.kpi-card::before {
-  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
-}
-.kpi-card.blue::before { background: var(--accent); }
-.kpi-card.green::before { background: var(--green); }
-.kpi-card.red::before { background: var(--red); }
-.kpi-card.amber::before { background: var(--amber); }
-.kpi-label { font-size: 11px; color: var(--text3); font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px; }
-.kpi-value { font-size: 28px; font-weight: 600; font-family: var(--mono); line-height: 1; }
-.kpi-sub { font-size: 11px; color: var(--text2); margin-top: 6px; display: flex; align-items: center; gap: 4px; }
-.kpi-delta { font-family: var(--mono); }
-.kpi-delta.up { color: var(--green); }
-.kpi-delta.down { color: var(--red); }
-
-/* TABLE */
-.table-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r2); overflow: hidden; }
-.table-head { padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); }
-.table-title { font-size: 13px; font-weight: 500; }
-.table-actions { display: flex; gap: 8px; align-items: center; }
-.search-box {
-  display: flex; align-items: center; gap: 8px; background: var(--bg3);
-  border: 1px solid var(--border); border-radius: var(--r); padding: 6px 12px;
-}
-.search-box input { background: none; border: none; color: var(--text); font-size: 13px; outline: none; width: 160px; font-family: var(--font); }
-.search-box input::placeholder { color: var(--text3); }
-.search-box svg { width: 13px; height: 13px; color: var(--text3); flex-shrink: 0; }
-table { width: 100%; border-collapse: collapse; }
-thead th { font-size: 11px; color: var(--text3); font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; padding: 10px 20px; text-align: left; border-bottom: 1px solid var(--border); white-space: nowrap; }
-tbody tr { border-bottom: 1px solid var(--border); transition: background 0.1s; }
-tbody tr:last-child { border-bottom: none; }
-tbody tr:hover { background: rgba(255,255,255,0.025); }
-td { padding: 12px 20px; font-size: 13px; color: var(--text2); vertical-align: middle; }
-td.primary { color: var(--text); font-weight: 500; }
-td.mono { font-family: var(--mono); font-size: 12px; }
-
-/* BADGES */
-.badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 9px; border-radius: 100px; font-size: 11px; font-weight: 600; font-family: var(--mono); }
-.badge-dot { width: 5px; height: 5px; border-radius: 50%; }
-.badge.success { background: rgba(34,211,160,0.12); color: var(--green); border: 1px solid rgba(34,211,160,0.2); }
-.badge.success .badge-dot { background: var(--green); }
-.badge.error { background: rgba(240,87,87,0.12); color: var(--red); border: 1px solid rgba(240,87,87,0.2); }
-.badge.error .badge-dot { background: var(--red); }
-.badge.running { background: rgba(79,142,247,0.12); color: var(--accent); border: 1px solid rgba(79,142,247,0.2); }
-.badge.running .badge-dot { background: var(--accent); animation: pulse 1.2s infinite; }
-.badge.pending { background: rgba(245,166,35,0.12); color: var(--amber); border: 1px solid rgba(245,166,35,0.2); }
-.badge.pending .badge-dot { background: var(--amber); }
-.badge.inactive { background: rgba(139,146,165,0.12); color: var(--text2); border: 1px solid var(--border); }
-.badge.admin { background: rgba(167,139,250,0.12); color: var(--purple); border: 1px solid rgba(167,139,250,0.2); }
-.badge.manager { background: rgba(34,211,238,0.12); color: var(--cyan); border: 1px solid rgba(34,211,238,0.2); }
-.badge.viewer { background: rgba(139,146,165,0.12); color: var(--text2); border: 1px solid var(--border); }
-@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
-
-/* GRID 2 */
-.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-.grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
-
-/* ROBOT CARDS */
-.robot-card {
-  background: var(--surface); border: 1px solid var(--border); border-radius: var(--r2);
-  padding: 18px; cursor: pointer; transition: all 0.15s; position: relative; overflow: hidden;
-}
-.robot-card:hover { border-color: var(--border2); background: var(--surface2); }
-.robot-card.selected { border-color: var(--accent); }
-.robot-card-header { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 12px; }
-.robot-icon { width: 38px; height: 38px; border-radius: var(--r); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.robot-icon svg { width: 20px; height: 20px; }
-.robot-name { font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 3px; }
-.robot-id { font-size: 11px; color: var(--text3); font-family: var(--mono); }
-.robot-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-.robot-stat { background: var(--bg3); border-radius: var(--r); padding: 8px 10px; }
-.robot-stat-label { font-size: 10px; color: var(--text3); margin-bottom: 2px; }
-.robot-stat-value { font-size: 14px; font-weight: 600; font-family: var(--mono); }
-
-/* FORMS */
-.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-.form-group { display: flex; flex-direction: column; gap: 6px; }
-.form-group.full { grid-column: 1 / -1; }
-label { font-size: 12px; font-weight: 500; color: var(--text2); }
-input, select, textarea {
-  background: var(--bg3); border: 1px solid var(--border2); border-radius: var(--r);
-  color: var(--text); font-size: 13px; padding: 9px 12px; font-family: var(--font);
-  outline: none; transition: border 0.15s; width: 100%;
-}
-input:focus, select:focus, textarea:focus { border-color: var(--accent); }
-input[type="password"] { letter-spacing: 0.1em; }
-select option { background: var(--bg3); }
-textarea { resize: vertical; min-height: 80px; }
-
-/* TERMINAL */
-.terminal {
-  background: #060809; border-radius: var(--r2); padding: 14px;
-  font-family: var(--mono); font-size: 12px; line-height: 1.7;
-  border: 1px solid var(--border); min-height: 200px; max-height: 380px; overflow-y: auto;
-}
-.log-line { display: flex; gap: 12px; }
-.log-ts { color: var(--text3); flex-shrink: 0; }
-.log-level { flex-shrink: 0; font-weight: 700; min-width: 48px; }
-.log-level.info { color: var(--accent); }
-.log-level.success { color: var(--green); }
-.log-level.error { color: var(--red); }
-.log-level.warn { color: var(--amber); }
-.log-msg { color: #c8d0e0; }
-
-/* MODAL */
-.modal-overlay {
-  position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 100;
-  display: flex; align-items: center; justify-content: center;
-}
-.modal {
-  background: var(--bg2); border: 1px solid var(--border2); border-radius: 16px;
-  width: 540px; max-height: 80vh; overflow-y: auto; box-shadow: 0 24px 80px rgba(0,0,0,0.6);
-}
-.modal-header { padding: 20px 24px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
-.modal-title { font-size: 15px; font-weight: 600; }
-.modal-body { padding: 20px 24px; }
-.modal-footer { padding: 14px 24px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 10px; }
-.modal-close { background: none; border: none; color: var(--text3); cursor: pointer; padding: 4px; border-radius: var(--r); }
-.modal-close:hover { color: var(--text); background: var(--border); }
-.modal-close svg { width: 18px; height: 18px; display: block; }
-
-/* LIVE FEED */
-.live-feed { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r2); overflow: hidden; }
-.live-header { padding: 12px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; }
-.live-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--red); animation: livepulse 1s infinite; }
-@keyframes livepulse { 0%,100% { opacity: 1; box-shadow: 0 0 0 0 rgba(240,87,87,0.4); } 50% { opacity: 0.8; box-shadow: 0 0 0 4px rgba(240,87,87,0); } }
-.live-title { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text2); }
-.live-body { padding: 4px 0; max-height: 220px; overflow-y: auto; }
-.live-entry { padding: 8px 16px; display: flex; gap: 12px; align-items: flex-start; border-bottom: 1px solid rgba(255,255,255,0.03); font-size: 12px; }
-.live-entry:last-child { border-bottom: none; }
-.live-entry .ts { color: var(--text3); font-family: var(--mono); flex-shrink: 0; }
-.live-entry .robot { color: var(--accent); font-weight: 500; flex-shrink: 0; }
-.live-entry .msg { color: var(--text2); }
-
-/* CHART */
-.chart-area { position: relative; height: 140px; display: flex; align-items: flex-end; gap: 4px; padding: 0 4px; }
-.bar { flex: 1; background: rgba(79,142,247,0.2); border-radius: 3px 3px 0 0; border: 1px solid rgba(79,142,247,0.3); transition: background 0.2s; cursor: pointer; position: relative; }
-.bar:hover { background: rgba(79,142,247,0.4); }
-.bar.success-bar { background: rgba(34,211,160,0.2); border-color: rgba(34,211,160,0.3); }
-.bar.success-bar:hover { background: rgba(34,211,160,0.4); }
-
-/* PROGRESS */
-.progress-bar { height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
-.progress-fill { height: 100%; border-radius: 2px; transition: width 0.3s; }
-
-/* SECTION */
-.section { margin-bottom: 24px; }
-.section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
-.section-title { font-size: 14px; font-weight: 600; }
-
-/* TABS */
-.tabs { display: flex; gap: 2px; background: var(--bg3); border: 1px solid var(--border); border-radius: var(--r); padding: 3px; margin-bottom: 20px; width: fit-content; }
-.tab { padding: 6px 14px; border-radius: 6px; cursor: pointer; font-size: 13px; color: var(--text3); transition: all 0.15s; }
-.tab.active { background: var(--surface2); color: var(--text); font-weight: 500; }
-.tab:hover:not(.active) { color: var(--text2); }
-
-/* SCHEMA BUILDER */
-.schema-row { display: grid; grid-template-columns: 1fr 1fr auto auto; gap: 8px; align-items: center; background: var(--bg3); border-radius: var(--r); padding: 10px 12px; margin-bottom: 8px; }
-.schema-row select, .schema-row input { margin: 0; }
-.toggle { position: relative; width: 34px; height: 18px; }
-.toggle input { opacity: 0; width: 0; height: 0; }
-.toggle-slider { position: absolute; inset: 0; background: var(--border2); border-radius: 9px; cursor: pointer; transition: 0.2s; }
-.toggle input:checked + .toggle-slider { background: var(--accent); }
-.toggle-slider::before { content: ''; position: absolute; width: 12px; height: 12px; left: 3px; top: 3px; background: white; border-radius: 50%; transition: 0.2s; }
-.toggle input:checked + .toggle-slider::before { transform: translateX(16px); }
-
-/* ICON BTN */
-.icon-btn { background: none; border: 1px solid var(--border); border-radius: var(--r); padding: 6px; color: var(--text3); cursor: pointer; display: inline-flex; align-items: center; transition: all 0.15s; }
-.icon-btn:hover { background: var(--surface); color: var(--text); border-color: var(--border2); }
-.icon-btn svg { width: 14px; height: 14px; }
-
-/* CRON */
-.cron-builder { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
-.cron-day { padding: 5px 10px; border-radius: var(--r); border: 1px solid var(--border2); background: var(--bg3); font-size: 12px; cursor: pointer; color: var(--text2); transition: all 0.15s; }
-.cron-day.selected { background: rgba(79,142,247,0.15); border-color: var(--accent); color: var(--accent); font-weight: 500; }
-
-/* SWITCH */
-.switch-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border); }
-.switch-row:last-child { border-bottom: none; }
-
-/* EMPTY */
-.empty { text-align: center; padding: 48px 24px; color: var(--text3); }
-.empty svg { width: 40px; height: 40px; opacity: 0.3; margin-bottom: 12px; }
-.empty p { font-size: 13px; }
-
-/* SCROLLBAR */
-::-webkit-scrollbar { width: 4px; height: 4px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
-
-/* BREADCRUMB */
-.breadcrumb { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text3); margin-bottom: 20px; }
-.breadcrumb span { color: var(--text2); }
-.breadcrumb .sep { opacity: 0.4; }
-
-/* ALERT */
-.alert { border-radius: var(--r); padding: 12px 16px; font-size: 13px; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
-.alert-info { background: rgba(79,142,247,0.1); border: 1px solid rgba(79,142,247,0.25); color: #7eb4ff; }
-.alert svg { width: 16px; height: 16px; flex-shrink: 0; }
-
-/* EXECUTIONS CHART */
-.mini-chart { display: flex; align-items: flex-end; gap: 3px; height: 50px; }
-.mini-bar { flex: 1; background: rgba(79,142,247,0.3); border-radius: 2px 2px 0 0; min-width: 4px; }
-.mini-bar.err { background: rgba(240,87,87,0.35); }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Orquestrador RPA 2.0</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.8.3/angular.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.8.3/angular-animate.min.js"></script>
+  <link
+    href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=DM+Sans:wght@300;400;500;600&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
 </head>
+
 <body ng-controller="MainCtrl">
 
-<!-- SIDEBAR -->
-<nav class="sidebar">
-  <div class="logo">
-    <div class="logo-icon">
-      <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+  <!-- SIDEBAR -->
+  <nav class="sidebar">
+    <div class="logo">
+      <div class="logo-icon">
+        <svg viewBox="0 0 24 24">
+          <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+        </svg>
+      </div>
+      <div>
+        <div class="logo-text">Orquestrador</div>
+        <div class="logo-sub">RPA 2.0</div>
+      </div>
     </div>
-    <div>
-      <div class="logo-text">Orquestrador</div>
-      <div class="logo-sub">RPA 2.0</div>
-    </div>
-  </div>
 
-  <div class="nav">
-    <div class="nav-group">
-      <div class="nav-label">Painel</div>
-      <div class="nav-item" ng-class="{active: page==='dashboard'}" ng-click="page='dashboard'">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-        Dashboard
-        <span class="status-dot"></span>
-      </div>
-      <div class="nav-item" ng-class="{active: page==='execucoes'}" ng-click="page='execucoes'">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-        Execuções
-        <span class="nav-badge">3</span>
-      </div>
-    </div>
-    <div class="nav-group">
-      <div class="nav-label">Gestão</div>
-      <div class="nav-item" ng-class="{active: page==='empresas'}" ng-click="page='empresas'">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-        Empresas
-      </div>
-      <div class="nav-item" ng-class="{active: page==='robos'}" ng-click="page='robos'">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/><path d="M9 7h6M9 11h6"/></svg>
-        Catálogo de Robôs
-      </div>
-      <div class="nav-item" ng-class="{active: page==='parametros'}" ng-click="page='parametros'">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93A10 10 0 116.93 19.07 10 10 0 0119.07 4.93"/></svg>
-        Parâmetros
-      </div>
-      <div class="nav-item" ng-class="{active: page==='agendamentos'}" ng-click="page='agendamentos'">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-        Agendamentos
-      </div>
-    </div>
-    <div class="nav-group">
-      <div class="nav-label">Sistema</div>
-      <div class="nav-item" ng-class="{active: page==='acesso'}" ng-click="page='acesso'">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
-        Controle de Acesso
-      </div>
-    </div>
-  </div>
-
-  <div class="sidebar-footer">
-    <div class="avatar">AD</div>
-    <div class="user-info">
-      <div class="user-name">Admin Woelfer</div>
-      <div class="user-role">Administrador</div>
-    </div>
-    <button class="btn-logout" ng-click="logout()" title="Sair do sistema">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/>
-        <polyline points="16 17 21 12 16 7"/>
-        <line x1="21" y1="12" x2="9" y2="12"/>
-      </svg>
-    </button>
-  </div>
-</nav>
-
-<!-- MAIN -->
-<div class="main">
-
-  <!-- TOP BAR -->
-  <div class="topbar">
-    <div class="topbar-title">
-      <span ng-if="page==='dashboard'">Dashboard & Monitor ao Vivo</span>
-      <span ng-if="page==='execucoes'">Histórico de Execuções</span>
-      <span ng-if="page==='empresas'">Gestão de Empresas</span>
-      <span ng-if="page==='robos'">Catálogo de Robôs</span>
-      <span ng-if="page==='parametros'">Central de Parâmetros</span>
-      <span ng-if="page==='agendamentos'">Agendador de Tarefas</span>
-      <span ng-if="page==='acesso'">Controle de Acesso (RBAC)</span>
-    </div>
-    <div class="topbar-actions">
-      <button class="btn btn-ghost" ng-if="page==='empresas'" ng-click="openModal('empresa')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        Nova Empresa
-      </button>
-      <button class="btn btn-ghost" ng-if="page==='robos'" ng-click="openModal('robo')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        Registrar Robô
-      </button>
-      <button class="btn btn-ghost" ng-if="page==='agendamentos'" ng-click="openModal('agendamento')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        Novo Agendamento
-      </button>
-      <button class="btn btn-ghost" ng-if="page==='acesso'" ng-click="openModal('usuario')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        Convidar Usuário
-      </button>
-      <button class="btn btn-primary" ng-if="page==='dashboard'" ng-click="page='execucoes'">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-        Ver Execuções
-      </button>
-    </div>
-  </div>
-
-  <!-- CONTENT -->
-  <div class="content">
-
-    <!-- ======================== DASHBOARD ======================== -->
-    <div ng-if="page==='dashboard'">
-      <div class="kpi-grid">
-        <div class="kpi-card blue">
-          <div class="kpi-label">Execuções Hoje</div>
-          <div class="kpi-value kpi-value--accent">247</div>
-          <div class="kpi-sub"><span class="kpi-delta up">↑ 18%</span> vs ontem</div>
+    <div class="nav">
+      <div class="nav-group">
+        <div class="nav-label">Painel</div>
+        <div class="nav-item" ng-class="{active: page==='dashboard'}" ng-click="page='dashboard'">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="7" height="7" />
+            <rect x="14" y="3" width="7" height="7" />
+            <rect x="14" y="14" width="7" height="7" />
+            <rect x="3" y="14" width="7" height="7" />
+          </svg>
+          Dashboard
+          <span class="status-dot"></span>
         </div>
-        <div class="kpi-card green">
-          <div class="kpi-label">Robôs Ativos</div>
-          <div class="kpi-value kpi-value--green">8</div>
-          <div class="kpi-sub"><span class="kpi-delta up">↑ 2</span> novos online</div>
-        </div>
-        <div class="kpi-card amber">
-          <div class="kpi-label">Taxa de Sucesso</div>
-          <div class="kpi-value kpi-value--amber">94.3%</div>
-          <div class="kpi-sub"><span class="kpi-delta down">↓ 0.8%</span> vs semana</div>
-        </div>
-        <div class="kpi-card red">
-          <div class="kpi-label">Falhas 24h</div>
-          <div class="kpi-value kpi-value--red">14</div>
-          <div class="kpi-sub"><span class="kpi-delta down">↑ 3</span> desde ontem</div>
+        <div class="nav-item" ng-class="{active: page==='execucoes'}" ng-click="page='execucoes'">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+          </svg>
+          Execuções
+          <span class="nav-badge">3</span>
         </div>
       </div>
+      <div class="nav-group">
+        <div class="nav-label">Gestão</div>
+        <div class="nav-item" ng-class="{active: page==='empresas'}" ng-click="page='empresas'">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
+            <polyline points="9 22 9 12 15 12 15 22" />
+          </svg>
+          Empresas
+        </div>
+        <div class="nav-item" ng-class="{active: page==='robos'}" ng-click="page='robos'">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="5" y="2" width="14" height="20" rx="2" />
+            <line x1="12" y1="18" x2="12.01" y2="18" />
+            <path d="M9 7h6M9 11h6" />
+          </svg>
+          Catálogo de Robôs
+        </div>
+        <div class="nav-item" ng-class="{active: page==='parametros'}" ng-click="page='parametros'">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3" />
+            <path d="M19.07 4.93A10 10 0 116.93 19.07 10 10 0 0119.07 4.93" />
+          </svg>
+          Parâmetros
+        </div>
+        <div class="nav-item" ng-class="{active: page==='agendamentos'}" ng-click="page='agendamentos'">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="4" width="18" height="18" rx="2" />
+            <line x1="16" y1="2" x2="16" y2="6" />
+            <line x1="8" y1="2" x2="8" y2="6" />
+            <line x1="3" y1="10" x2="21" y2="10" />
+          </svg>
+          Agendamentos
+        </div>
+      </div>
+      <div class="nav-group">
+        <div class="nav-label">Sistema</div>
+        <div class="nav-item" ng-class="{active: page==='acesso'}" ng-click="page='acesso'">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
+            <circle cx="9" cy="7" r="4" />
+            <path d="M23 21v-2a4 4 0 00-3-3.87" />
+            <path d="M16 3.13a4 4 0 010 7.75" />
+          </svg>
+          Controle de Acesso
+        </div>
+      </div>
+    </div>
 
-      <div class="grid2 grid2--mb">
-        <div class="table-card">
-          <div class="table-head">
-            <span class="table-title">Volumetria por Hora</span>
-            <div class="tabs tabs--flush">
-              <div class="tab active">Hoje</div>
-              <div class="tab">7 dias</div>
-            </div>
+    <div class="sidebar-footer">
+      <div class="avatar">AD</div>
+      <div class="user-info">
+        <div class="user-name">Admin Woelfer</div>
+        <div class="user-role">Administrador</div>
+      </div>
+      <button class="btn-logout" ng-click="logout()" title="Sair do sistema">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+          stroke-linejoin="round">
+          <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" />
+          <polyline points="16 17 21 12 16 7" />
+          <line x1="21" y1="12" x2="9" y2="12" />
+        </svg>
+      </button>
+    </div>
+  </nav>
+
+  <!-- MAIN -->
+  <div class="main">
+
+    <!-- TOP BAR -->
+    <div class="topbar">
+      <div class="topbar-title">
+        <span ng-if="page==='dashboard'">Dashboard & Monitor ao Vivo</span>
+        <span ng-if="page==='execucoes'">Histórico de Execuções</span>
+        <span ng-if="page==='empresas'">Gestão de Empresas</span>
+        <span ng-if="page==='robos'">Catálogo de Robôs</span>
+        <span ng-if="page==='parametros'">Central de Parâmetros</span>
+        <span ng-if="page==='agendamentos'">Agendador de Tarefas</span>
+        <span ng-if="page==='acesso'">Controle de Acesso (RBAC)</span>
+      </div>
+      <div class="topbar-actions">
+        <button class="btn btn-ghost" ng-if="page==='empresas'" ng-click="openModal('empresa')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="12" y1="5" x2="12" y2="19" />
+            <line x1="5" y1="12" x2="19" y2="12" />
+          </svg>
+          Nova Empresa
+        </button>
+        <button class="btn btn-ghost" ng-if="page==='robos'" ng-click="openModal('robo')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="12" y1="5" x2="12" y2="19" />
+            <line x1="5" y1="12" x2="19" y2="12" />
+          </svg>
+          Registrar Robô
+        </button>
+        <button class="btn btn-ghost" ng-if="page==='agendamentos'" ng-click="openModal('agendamento')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="12" y1="5" x2="12" y2="19" />
+            <line x1="5" y1="12" x2="19" y2="12" />
+          </svg>
+          Novo Agendamento
+        </button>
+        <button class="btn btn-ghost" ng-if="page==='acesso'" ng-click="openModal('usuario')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="12" y1="5" x2="12" y2="19" />
+            <line x1="5" y1="12" x2="19" y2="12" />
+          </svg>
+          Convidar Usuário
+        </button>
+        <button class="btn btn-primary" ng-if="page==='dashboard'" ng-click="page='execucoes'">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+          </svg>
+          Ver Execuções
+        </button>
+      </div>
+    </div>
+
+    <!-- CONTENT -->
+    <div class="content">
+
+      <!-- ======================== DASHBOARD ======================== -->
+      <div ng-if="page==='dashboard'">
+        <div class="kpi-grid">
+          <div class="kpi-card blue">
+            <div class="kpi-label">Execuções Hoje</div>
+            <div class="kpi-value kpi-value--accent">247</div>
+            <div class="kpi-sub"><span class="kpi-delta up">↑ 18%</span> vs ontem</div>
           </div>
-          <div class="panel-body">
-            <div class="chart-area">
-              <div class="bar" ng-repeat="b in chartBars" ng-style="{height: b.h+'%'}" title="{{b.v}} execuções"></div>
-            </div>
-            <div class="chart-x-labels">
-              <span>00h</span><span>04h</span><span>08h</span><span>12h</span><span>16h</span><span>20h</span><span>23h</span>
-            </div>
+          <div class="kpi-card green">
+            <div class="kpi-label">Robôs Ativos</div>
+            <div class="kpi-value kpi-value--green">8</div>
+            <div class="kpi-sub"><span class="kpi-delta up">↑ 2</span> novos online</div>
+          </div>
+          <div class="kpi-card amber">
+            <div class="kpi-label">Taxa de Sucesso</div>
+            <div class="kpi-value kpi-value--amber">94.3%</div>
+            <div class="kpi-sub"><span class="kpi-delta down">↓ 0.8%</span> vs semana</div>
+          </div>
+          <div class="kpi-card red">
+            <div class="kpi-label">Falhas 24h</div>
+            <div class="kpi-value kpi-value--red">14</div>
+            <div class="kpi-sub"><span class="kpi-delta down">↑ 3</span> desde ontem</div>
           </div>
         </div>
 
-        <div class="live-feed">
-          <div class="live-header">
-            <div class="live-dot"></div>
-            <span class="live-title">Atividade em Tempo Real</span>
-          </div>
-          <div class="live-body">
-            <div class="live-entry" ng-repeat="log in liveLogs">
-              <span class="ts">{{log.ts}}</span>
-              <span class="robot">{{log.robot}}</span>
-              <span class="msg">{{log.msg}}</span>
+        <div class="grid2 grid2--mb">
+          <div class="table-card">
+            <div class="table-head">
+              <span class="table-title">Volumetria por Hora</span>
+              <div class="tabs tabs--flush">
+                <div class="tab active">Hoje</div>
+                <div class="tab">7 dias</div>
+              </div>
             </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="table-card">
-        <div class="table-head">
-          <span class="table-title">Robôs com Falhas Recentes</span>
-        </div>
-        <table>
-          <thead><tr><th>Robô</th><th>Empresa</th><th>Última Falha</th><th>Mensagem</th><th>Ação</th></tr></thead>
-          <tbody>
-            <tr ng-repeat="f in falhas">
-              <td class="primary">{{f.robot}}</td>
-              <td>{{f.empresa}}</td>
-              <td class="mono">{{f.tempo}}</td>
-              <td><span class="error-text--sm">{{f.msg}}</span></td>
-              <td><button class="btn btn-ghost btn--compact" ng-click="verLog(f)">Ver Log</button></td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- ======================== EXECUÇÕES ======================== -->
-    <div ng-if="page==='execucoes'">
-      <div class="section-header">
-        <div class="filter-group">
-          <select ng-model="filtroStatus" class="select--sm">
-            <option value="">Todos status</option>
-            <option value="success">Sucesso</option>
-            <option value="error">Erro</option>
-            <option value="running">Processando</option>
-          </select>
-          <select ng-model="filtroEmpresa" class="select--md">
-            <option value="">Todas empresas</option>
-            <option ng-repeat="e in empresas" value="{{e.id}}">{{e.nome}}</option>
-          </select>
-          <select ng-model="filtroRobo" class="select--md">
-            <option value="">Todos robôs</option>
-            <option ng-repeat="r in robos" value="{{r.id}}">{{r.nome}}</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="table-card">
-        <table>
-          <thead><tr><th>#ID</th><th>Robô</th><th>Empresa</th><th>Início</th><th>Duração</th><th>Status</th><th>Ações</th></tr></thead>
-          <tbody>
-            <tr ng-repeat="ex in execucoes | filter:filtrarExecucoes">
-              <td class="mono td-id">#{{ex.id}}</td>
-              <td class="primary">{{ex.robo}}</td>
-              <td>{{ex.empresa}}</td>
-              <td class="mono">{{ex.inicio}}</td>
-              <td class="mono">{{ex.duracao}}</td>
-              <td><span class="badge" ng-class="ex.status">
-                <span class="badge-dot"></span>
-                {{ex.statusLabel}}
-              </span></td>
-              <td>
-                <div class="action-group">
-                  <button class="icon-btn" title="Ver log" ng-click="abrirTerminal(ex)">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
-                  </button>
-                  <button class="icon-btn" title="Reexecutar" ng-click="reexecutar(ex)" ng-if="ex.status!=='running'">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
-                  </button>
+            <div class="panel-body">
+              <div class="chart-area">
+                <div class="bar" ng-repeat="b in chartBars" ng-style="{height: b.h+'%'}" title="{{b.v}} execuções">
                 </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <!-- TERMINAL -->
-      <div ng-if="terminalOpen" class="terminal-section">
-        <div class="table-card">
-          <div class="table-head">
-            <span class="table-title table-title--mono">$ log — Execução #{{selectedExec.id}} — {{selectedExec.robo}}</span>
-            <div class="btn-group">
-              <button class="btn btn-ghost btn--sm">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="icon-sm"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                Baixar .txt
-              </button>
-              <button class="icon-btn" ng-click="terminalOpen=false">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-              </button>
+              </div>
+              <div class="chart-x-labels">
+                <span>00h</span><span>04h</span><span>08h</span><span>12h</span><span>16h</span><span>20h</span><span>23h</span>
+              </div>
             </div>
           </div>
-          <div class="panel-body--sm">
-            <div class="terminal">
-              <div class="log-line" ng-repeat="l in terminalLogs">
-                <span class="log-ts">{{l.ts}}</span>
-                <span class="log-level" ng-class="l.level">{{l.level | uppercase}}</span>
-                <span class="log-msg">{{l.msg}}</span>
+
+          <div class="live-feed">
+            <div class="live-header">
+              <div class="live-dot"></div>
+              <span class="live-title">Atividade em Tempo Real</span>
+            </div>
+            <div class="live-body">
+              <div class="live-entry" ng-repeat="log in liveLogs">
+                <span class="ts">{{log.ts}}</span>
+                <span class="robot">{{log.robot}}</span>
+                <span class="msg">{{log.msg}}</span>
               </div>
             </div>
           </div>
         </div>
-      </div>
-    </div>
 
-    <!-- ======================== EMPRESAS ======================== -->
-    <div ng-if="page==='empresas'">
-      <div class="table-card">
-        <div class="table-head">
-          <span class="table-title">{{empresas.length}} empresas cadastradas</span>
-          <div class="table-actions">
-            <div class="search-box">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-              <input placeholder="Buscar empresa..." ng-model="buscaEmpresa">
-            </div>
-          </div>
-        </div>
-        <table>
-          <thead><tr><th>Razão Social</th><th>CNPJ</th><th>Status</th><th>Robôs</th><th>Cadastro</th><th>Ações</th></tr></thead>
-          <tbody>
-            <tr ng-repeat="e in empresas | filter:{nome: buscaEmpresa}">
-              <td class="primary">{{e.nome}}</td>
-              <td class="mono">{{e.cnpj}}</td>
-              <td><span class="badge" ng-class="e.ativo ? 'success' : 'inactive'"><span class="badge-dot"></span>{{e.ativo ? 'Ativo' : 'Inativo'}}</span></td>
-              <td class="mono td-count--accent">{{e.robosCount}}</td>
-              <td class="mono">{{e.cadastro}}</td>
-              <td>
-                <div class="action-group">
-                  <button class="icon-btn" title="Editar" ng-click="editarEmpresa(e)">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                  </button>
-                  <button class="icon-btn" title="Configurar parâmetros" ng-click="page='parametros';filtroEmpresaParam=e.id">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93A10 10 0 116.93 19.07"/></svg>
-                  </button>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- ======================== ROBÔS ======================== -->
-    <div ng-if="page==='robos'">
-      <div class="alert alert-info alert--spaced">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-        Defina os JSON Schemas de cada robô. Esses schemas guiam o formulário dinâmico da Tela de Parâmetros.
-      </div>
-
-      <div class="grid3">
-        <div class="robot-card" ng-repeat="r in robos" ng-class="{selected: selectedRobo && selectedRobo.id===r.id}" ng-click="selecionarRobo(r)">
-          <div class="robot-card-header">
-            <div class="robot-icon" ng-style="{'background': r.iconBg, 'color': r.iconColor}">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/><path d="M9 7h6M9 11h6"/></svg>
-            </div>
-            <div>
-              <div class="robot-name">{{r.nome}}</div>
-              <div class="robot-id">{{r.id}}</div>
-            </div>
-            <span class="badge ml-auto" ng-class="r.status">
-              <span class="badge-dot"></span>{{r.statusLabel}}
-            </span>
-          </div>
-          <div class="robot-stats">
-            <div class="robot-stat">
-              <div class="robot-stat-label">Execuções</div>
-              <div class="robot-stat-value robot-stat-value--accent">{{r.execucoes}}</div>
-            </div>
-            <div class="robot-stat">
-              <div class="robot-stat-label">Sucesso</div>
-              <div class="robot-stat-value robot-stat-value--green">{{r.taxa}}%</div>
-            </div>
-          </div>
-          <div class="robot-progress">
-            <div class="progress-labels">
-              <span>Taxa de sucesso</span><span class="label--green">{{r.taxa}}%</span>
-            </div>
-            <div class="progress-bar">
-              <div class="progress-fill" ng-style="{width: r.taxa+'%', background: r.taxa >= 90 ? 'var(--green)' : r.taxa >= 70 ? 'var(--amber)' : 'var(--red)'}"></div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- SCHEMA EDITOR -->
-      <div ng-if="selectedRobo" class="robot-detail-section">
         <div class="table-card">
           <div class="table-head">
-            <span class="table-title">Editor de Schema — {{selectedRobo.nome}}</span>
-            <div class="btn-group">
-              <button class="btn btn-ghost btn--sm">Nova Versão</button>
-              <button class="btn btn-primary btn--sm" ng-click="addSchemaField(selectedRobo)">+ Adicionar Campo</button>
-            </div>
+            <span class="table-title">Robôs com Falhas Recentes</span>
           </div>
-          <div class="panel-body">
-            <div class="schema-header">
-              <span class="schema-col-label">Nome do Campo</span>
-              <span class="schema-col-label">Tipo</span>
-              <span class="schema-col-label">Obrigatório</span>
-              <span></span>
-            </div>
-            <div class="schema-row" ng-repeat="field in selectedRobo.schema">
-              <input ng-model="field.nome" placeholder="ex: url_sistema">
-              <select ng-model="field.tipo">
-                <option value="texto">texto</option>
-                <option value="password">password</option>
-                <option value="numero">número</option>
-                <option value="boolean">boolean</option>
-                <option value="select">select</option>
-              </select>
-              <label class="toggle toggle--centered">
-                <input type="checkbox" ng-model="field.obrigatorio">
-                <span class="toggle-slider"></span>
-              </label>
-              <button class="icon-btn" ng-click="removeSchemaField(selectedRobo, $index)">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
-              </button>
-            </div>
-            <div class="form-actions">
-              <button class="btn btn-ghost">Cancelar</button>
-              <button class="btn btn-primary">Salvar Schema</button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ======================== PARÂMETROS ======================== -->
-    <div ng-if="page==='parametros'">
-      <div class="alert alert-info">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-        Selecione uma empresa e um robô para exibir e preencher os parâmetros customizados da integração.
-      </div>
-
-      <div class="robot-detail-grid">
-        <div class="form-group">
-          <label>Empresa</label>
-          <select ng-model="paramEmpresa" ng-change="loadParamSchema()">
-            <option value="">— Selecione a empresa —</option>
-            <option ng-repeat="e in empresas" value="{{e.id}}">{{e.nome}}</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Robô</label>
-          <select ng-model="paramRobo" ng-change="loadParamSchema()">
-            <option value="">— Selecione o robô —</option>
-            <option ng-repeat="r in robos" value="{{r.id}}">{{r.nome}}</option>
-          </select>
-        </div>
-      </div>
-
-      <div ng-if="!paramEmpresa || !paramRobo" class="table-card">
-        <div class="empty">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-          <p>Selecione uma empresa e um robô para exibir o formulário dinâmico</p>
-        </div>
-      </div>
-
-      <div ng-if="paramEmpresa && paramRobo && paramSchema" class="table-card">
-        <div class="table-head">
-          <span class="table-title">Parâmetros — {{getEmpresaNome(paramEmpresa)}} × {{getRoboNome(paramRobo)}}</span>
-        </div>
-        <div class="panel-body--lg">
-          <div class="form-grid">
-            <div class="form-group" ng-repeat="field in paramSchema" ng-class="{'full': $last && paramSchema.length % 2 !== 0}">
-              <label>{{field.nome}} <span ng-if="field.obrigatorio" class="required-marker">*</span></label>
-              <input ng-if="field.tipo!=='password' && field.tipo!=='select'" type="text" ng-model="paramValues[field.nome]" placeholder="Inserir {{field.nome}}">
-              <input ng-if="field.tipo==='password'" type="password" ng-model="paramValues[field.nome]" placeholder="••••••••">
-              <select ng-if="field.tipo==='select'" ng-model="paramValues[field.nome]">
-                <option value="">Selecionar...</option>
-                <option ng-repeat="opt in field.options">{{opt}}</option>
-              </select>
-            </div>
-          </div>
-          <div class="form-submit">
-            <button class="btn btn-ghost">Testar Integração</button>
-            <button class="btn btn-primary">Salvar Configurações</button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ======================== AGENDAMENTOS ======================== -->
-    <div ng-if="page==='agendamentos'">
-      <div class="table-card">
-        <div class="table-head">
-          <span class="table-title">{{agendamentos.length}} agendamentos configurados</span>
-        </div>
-        <table>
-          <thead><tr><th>Empresa</th><th>Robô</th><th>Recorrência</th><th>Próxima Execução</th><th>Status</th><th>Ações</th></tr></thead>
-          <tbody>
-            <tr ng-repeat="a in agendamentos">
-              <td class="primary">{{a.empresa}}</td>
-              <td>{{a.robo}}</td>
-              <td>
-                <span class="schedule-desc">{{a.desc}}</span>
-                <div class="schedule-cron-expr">{{a.cron}}</div>
-              </td>
-              <td class="mono">{{a.proxima}}</td>
-              <td>
-                <label class="toggle">
-                  <input type="checkbox" ng-model="a.ativo">
-                  <span class="toggle-slider"></span>
-                </label>
-              </td>
-              <td>
-                <div class="action-group">
-                  <button class="btn btn-success btn--xs" ng-click="executarAgora(a)">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="icon-xs"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-                    Executar Agora
-                  </button>
-                  <button class="icon-btn" title="Remover">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
-                  </button>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- ======================== ACESSO ======================== -->
-    <div ng-if="page==='acesso'">
-      <div class="table-card">
-        <div class="table-head">
-          <span class="table-title">Usuários do Sistema</span>
-          <div class="search-box">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-            <input placeholder="Buscar usuário..." ng-model="buscaUsuario">
-          </div>
-        </div>
-        <table>
-          <thead><tr><th>Nome</th><th>E-mail</th><th>Nível</th><th>Último Login</th><th>Status</th><th>Ações</th></tr></thead>
-          <tbody>
-            <tr ng-repeat="u in usuarios | filter:{nome: buscaUsuario}">
-              <td>
-                <div class="user-cell">
-                  <div class="avatar avatar--sm" ng-style="{'background': 'linear-gradient(135deg,' + u.color1 + ',' + u.color2 + ')'}">{{u.iniciais}}</div>
-                  <span class="primary user-display-name">{{u.nome}}</span>
-                </div>
-              </td>
-              <td class="td--sm">{{u.email}}</td>
-              <td><span class="badge" ng-class="u.nivel">{{u.nivelLabel}}</span></td>
-              <td class="mono">{{u.ultimoLogin}}</td>
-              <td><span class="badge" ng-class="u.ativo ? 'success' : 'inactive'"><span class="badge-dot"></span>{{u.ativo ? 'Ativo' : 'Inativo'}}</span></td>
-              <td>
-                <div class="action-group">
-                  <button class="icon-btn" title="Editar permissões">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
-                  </button>
-                  <button class="icon-btn" title="Editar">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4z"/></svg>
-                  </button>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <div class="table-card mt-20">
-        <div class="table-head"><span class="table-title">Permissões por Perfil</span></div>
-        <div class="panel-body">
           <table>
-            <thead><tr><th>Funcionalidade</th><th class="text-center">Admin</th><th class="text-center">Manager</th><th class="text-center">Viewer</th></tr></thead>
+            <thead>
+              <tr>
+                <th>Robô</th>
+                <th>Empresa</th>
+                <th>Última Falha</th>
+                <th>Mensagem</th>
+                <th>Ação</th>
+              </tr>
+            </thead>
             <tbody>
-              <tr ng-repeat="p in permissoes">
-                <td class="primary">{{p.func}}</td>
-                <td class="text-center"><span ng-if="p.admin" class="perm-allowed">✓</span><span ng-if="!p.admin" class="perm-denied">—</span></td>
-                <td class="text-center"><span ng-if="p.manager" class="perm-allowed">✓</span><span ng-if="!p.manager" class="perm-denied">—</span></td>
-                <td class="text-center"><span ng-if="p.viewer" class="perm-allowed">✓</span><span ng-if="!p.viewer" class="perm-denied">—</span></td>
+              <tr ng-repeat="f in falhas">
+                <td class="primary">{{f.robot}}</td>
+                <td>{{f.empresa}}</td>
+                <td class="mono">{{f.tempo}}</td>
+                <td><span class="error-text--sm">{{f.msg}}</span></td>
+                <td><button class="btn btn-ghost btn--compact" ng-click="verLog(f)">Ver Log</button></td>
               </tr>
             </tbody>
           </table>
         </div>
       </div>
-    </div>
 
-  </div><!-- /content -->
-</div><!-- /main -->
-
-<!-- MODAL -->
-<div class="modal-overlay" ng-if="modalOpen" ng-click="fecharModal($event)">
-  <div class="modal" ng-click="$event.stopPropagation()">
-
-    <!-- EMPRESA MODAL -->
-    <div ng-if="modalType==='empresa'">
-      <div class="modal-header">
-        <span class="modal-title">{{editando ? 'Editar Empresa' : 'Nova Empresa'}}</span>
-        <button class="modal-close" ng-click="fecharModal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
-      </div>
-      <div class="modal-body">
-        <div class="form-grid">
-          <div class="form-group full"><label>Razão Social *</label><input ng-model="formEmpresa.nome" placeholder="Nome da empresa"></div>
-          <div class="form-group"><label>CNPJ *</label><input ng-model="formEmpresa.cnpj" placeholder="00.000.000/0001-00"></div>
-          <div class="form-group"><label>Inscrição Estadual</label><input ng-model="formEmpresa.ie" placeholder="000.000.000.000"></div>
-          <div class="form-group full"><label>E-mail de Notificação</label><input ng-model="formEmpresa.email" placeholder="notificacoes@empresa.com" type="email"></div>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button class="btn btn-ghost" ng-click="fecharModal()">Cancelar</button>
-        <button class="btn btn-primary" ng-click="salvarEmpresa()">{{editando ? 'Salvar' : 'Cadastrar'}}</button>
-      </div>
-    </div>
-
-    <!-- ROBÔ MODAL -->
-    <div ng-if="modalType==='robo'">
-      <div class="modal-header">
-        <span class="modal-title">Registrar Novo Robô</span>
-        <button class="modal-close" ng-click="fecharModal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
-      </div>
-      <div class="modal-body">
-        <div class="form-grid">
-          <div class="form-group full"><label>Nome do Robô *</label><input ng-model="formRobo.nome" placeholder="ex: Robô Fiscal - Emitir NF"></div>
-          <div class="form-group"><label>Módulo</label>
-            <select ng-model="formRobo.modulo">
-              <option>Fiscal</option><option>Comercial</option><option>Financeiro</option><option>RH</option><option>Logística</option>
+      <!-- ======================== EXECUÇÕES ======================== -->
+      <div ng-if="page==='execucoes'">
+        <div class="section-header">
+          <div class="filter-group">
+            <select ng-model="filtroStatus" class="select--sm">
+              <option value="">Todos status</option>
+              <option value="success">Sucesso</option>
+              <option value="error">Erro</option>
+              <option value="running">Processando</option>
+            </select>
+            <select ng-model="filtroEmpresa" class="select--md">
+              <option value="">Todas empresas</option>
+              <option ng-repeat="e in empresas" value="{{e.id}}">{{e.nome}}</option>
+            </select>
+            <select ng-model="filtroRobo" class="select--md">
+              <option value="">Todos robôs</option>
+              <option ng-repeat="r in robos" value="{{r.id}}">{{r.nome}}</option>
             </select>
           </div>
-          <div class="form-group"><label>Versão</label><input ng-model="formRobo.versao" placeholder="1.0.0"></div>
-          <div class="form-group full"><label>Descrição</label><textarea ng-model="formRobo.descricao" placeholder="Descreva o que este robô faz..."></textarea></div>
+        </div>
+
+        <div class="table-card">
+          <table>
+            <thead>
+              <tr>
+                <th>#ID</th>
+                <th>Robô</th>
+                <th>Empresa</th>
+                <th>Início</th>
+                <th>Duração</th>
+                <th>Status</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr ng-repeat="ex in execucoes | filter:filtrarExecucoes">
+                <td class="mono td-id">#{{ex.id}}</td>
+                <td class="primary">{{ex.robo}}</td>
+                <td>{{ex.empresa}}</td>
+                <td class="mono">{{ex.inicio}}</td>
+                <td class="mono">{{ex.duracao}}</td>
+                <td><span class="badge" ng-class="ex.status">
+                    <span class="badge-dot"></span>
+                    {{ex.statusLabel}}
+                  </span></td>
+                <td>
+                  <div class="action-group">
+                    <button class="icon-btn" title="Ver log" ng-click="abrirTerminal(ex)">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="4 17 10 11 4 5" />
+                        <line x1="12" y1="19" x2="20" y2="19" />
+                      </svg>
+                    </button>
+                    <button class="icon-btn" title="Reexecutar" ng-click="reexecutar(ex)" ng-if="ex.status!=='running'">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="23 4 23 10 17 10" />
+                        <path d="M20.49 15a9 9 0 11-2.12-9.36L23 10" />
+                      </svg>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- TERMINAL -->
+        <div ng-if="terminalOpen" class="terminal-section">
+          <div class="table-card">
+            <div class="table-head">
+              <span class="table-title table-title--mono">$ log — Execução #{{selectedExec.id}} —
+                {{selectedExec.robo}}</span>
+              <div class="btn-group">
+                <button class="btn btn-ghost btn--sm">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="icon-sm">
+                    <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+                    <polyline points="7 10 12 15 17 10" />
+                    <line x1="12" y1="15" x2="12" y2="3" />
+                  </svg>
+                  Baixar .txt
+                </button>
+                <button class="icon-btn" ng-click="terminalOpen=false">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18" />
+                    <line x1="6" y1="6" x2="18" y2="18" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+            <div class="panel-body--sm">
+              <div class="terminal">
+                <div class="log-line" ng-repeat="l in terminalLogs">
+                  <span class="log-ts">{{l.ts}}</span>
+                  <span class="log-level" ng-class="l.level">{{l.level | uppercase}}</span>
+                  <span class="log-msg">{{l.msg}}</span>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-      <div class="modal-footer">
-        <button class="btn btn-ghost" ng-click="fecharModal()">Cancelar</button>
-        <button class="btn btn-primary" ng-click="salvarRobo()">Registrar</button>
-      </div>
-    </div>
 
-    <!-- AGENDAMENTO MODAL -->
-    <div ng-if="modalType==='agendamento'">
-      <div class="modal-header">
-        <span class="modal-title">Novo Agendamento</span>
-        <button class="modal-close" ng-click="fecharModal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+      <!-- ======================== EMPRESAS ======================== -->
+      <div ng-if="page==='empresas'">
+        <div class="table-card">
+          <div class="table-head">
+            <span class="table-title">{{empresas.length}} empresas cadastradas</span>
+            <div class="table-actions">
+              <div class="search-box">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="11" cy="11" r="8" />
+                  <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                </svg>
+                <input placeholder="Buscar empresa..." ng-model="buscaEmpresa">
+              </div>
+            </div>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Razão Social</th>
+                <th>CNPJ</th>
+                <th>Status</th>
+                <th>Robôs</th>
+                <th>Cadastro</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr ng-repeat="e in empresas | filter:{nome: buscaEmpresa}">
+                <td class="primary">{{e.nome}}</td>
+                <td class="mono">{{e.cnpj}}</td>
+                <td><span class="badge" ng-class="e.ativo ? 'success' : 'inactive'"><span
+                      class="badge-dot"></span>{{e.ativo ? 'Ativo' : 'Inativo'}}</span></td>
+                <td class="mono td-count--accent">{{e.robosCount}}</td>
+                <td class="mono">{{e.cadastro}}</td>
+                <td>
+                  <div class="action-group">
+                    <button class="icon-btn" title="Editar" ng-click="editarEmpresa(e)">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
+                        <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
+                      </svg>
+                    </button>
+                    <button class="icon-btn" title="Configurar parâmetros"
+                      ng-click="page='parametros';filtroEmpresaParam=e.id">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="3" />
+                        <path d="M19.07 4.93A10 10 0 116.93 19.07" />
+                      </svg>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
-      <div class="modal-body">
-        <div class="form-grid">
+
+      <!-- ======================== ROBÔS ======================== -->
+      <div ng-if="page==='robos'">
+        <div class="alert alert-info alert--spaced">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10" />
+            <line x1="12" y1="16" x2="12" y2="12" />
+            <line x1="12" y1="8" x2="12.01" y2="8" />
+          </svg>
+          Defina os JSON Schemas de cada robô. Esses schemas guiam o formulário dinâmico da Tela de Parâmetros.
+        </div>
+
+        <div class="grid3">
+          <div class="robot-card" ng-repeat="r in robos" ng-class="{selected: selectedRobo && selectedRobo.id===r.id}"
+            ng-click="selecionarRobo(r)">
+            <div class="robot-card-header">
+              <div class="robot-icon" ng-style="{'background': r.iconBg, 'color': r.iconColor}">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="5" y="2" width="14" height="20" rx="2" />
+                  <line x1="12" y1="18" x2="12.01" y2="18" />
+                  <path d="M9 7h6M9 11h6" />
+                </svg>
+              </div>
+              <div>
+                <div class="robot-name">{{r.nome}}</div>
+                <div class="robot-id">{{r.id}}</div>
+              </div>
+              <span class="badge ml-auto" ng-class="r.status">
+                <span class="badge-dot"></span>{{r.statusLabel}}
+              </span>
+            </div>
+            <div class="robot-stats">
+              <div class="robot-stat">
+                <div class="robot-stat-label">Execuções</div>
+                <div class="robot-stat-value robot-stat-value--accent">{{r.execucoes}}</div>
+              </div>
+              <div class="robot-stat">
+                <div class="robot-stat-label">Sucesso</div>
+                <div class="robot-stat-value robot-stat-value--green">{{r.taxa}}%</div>
+              </div>
+            </div>
+            <div class="robot-progress">
+              <div class="progress-labels">
+                <span>Taxa de sucesso</span><span class="label--green">{{r.taxa}}%</span>
+              </div>
+              <div class="progress-bar">
+                <div class="progress-fill"
+                  ng-class="{'progress-fill--success': r.taxa >= 90, 'progress-fill--warning': r.taxa >= 70 && r.taxa < 90, 'progress-fill--danger': r.taxa < 70}"
+                  ng-style="{width: r.taxa+'%'}"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SCHEMA EDITOR -->
+        <div ng-if="selectedRobo" class="robot-detail-section">
+          <div class="table-card">
+            <div class="table-head">
+              <span class="table-title">Editor de Schema — {{selectedRobo.nome}}</span>
+              <div class="btn-group">
+                <button class="btn btn-ghost btn--sm">Nova Versão</button>
+                <button class="btn btn-primary btn--sm" ng-click="addSchemaField(selectedRobo)">+ Adicionar
+                  Campo</button>
+              </div>
+            </div>
+            <div class="panel-body">
+              <div class="schema-header">
+                <span class="schema-col-label">Nome do Campo</span>
+                <span class="schema-col-label">Tipo</span>
+                <span class="schema-col-label">Obrigatório</span>
+                <span></span>
+              </div>
+              <div class="schema-row" ng-repeat="field in selectedRobo.schema">
+                <input ng-model="field.nome" placeholder="ex: url_sistema">
+                <select ng-model="field.tipo">
+                  <option value="texto">texto</option>
+                  <option value="password">password</option>
+                  <option value="numero">número</option>
+                  <option value="boolean">boolean</option>
+                  <option value="select">select</option>
+                </select>
+                <label class="toggle toggle--centered">
+                  <input type="checkbox" ng-model="field.obrigatorio">
+                  <span class="toggle-slider"></span>
+                </label>
+                <button class="icon-btn" ng-click="removeSchemaField(selectedRobo, $index)">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="3 6 5 6 21 6" />
+                    <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" />
+                    <path d="M10 11v6M14 11v6" />
+                    <path d="M9 6V4h6v2" />
+                  </svg>
+                </button>
+              </div>
+              <div class="form-actions">
+                <button class="btn btn-ghost">Cancelar</button>
+                <button class="btn btn-primary">Salvar Schema</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ======================== PARÂMETROS ======================== -->
+      <div ng-if="page==='parametros'">
+        <div class="alert alert-info">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10" />
+            <line x1="12" y1="16" x2="12" y2="12" />
+            <line x1="12" y1="8" x2="12.01" y2="8" />
+          </svg>
+          Selecione uma empresa e um robô para exibir e preencher os parâmetros customizados da integração.
+        </div>
+
+        <div class="robot-detail-grid">
           <div class="form-group">
-            <label>Empresa *</label>
-            <select ng-model="formAg.empresa">
-              <option value="">Selecionar...</option>
+            <label>Empresa</label>
+            <select ng-model="paramEmpresa" ng-change="loadParamSchema()">
+              <option value="">— Selecione a empresa —</option>
               <option ng-repeat="e in empresas" value="{{e.id}}">{{e.nome}}</option>
             </select>
           </div>
           <div class="form-group">
-            <label>Robô *</label>
-            <select ng-model="formAg.robo">
-              <option value="">Selecionar...</option>
+            <label>Robô</label>
+            <select ng-model="paramRobo" ng-change="loadParamSchema()">
+              <option value="">— Selecione o robô —</option>
               <option ng-repeat="r in robos" value="{{r.id}}">{{r.nome}}</option>
             </select>
           </div>
-          <div class="form-group">
-            <label>Horário</label>
-            <input type="time" ng-model="formAg.hora" value="08:00">
+        </div>
+
+        <div ng-if="!paramEmpresa || !paramRobo" class="table-card">
+          <div class="empty">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <circle cx="12" cy="12" r="10" />
+              <line x1="12" y1="8" x2="12" y2="12" />
+              <line x1="12" y1="16" x2="12.01" y2="16" />
+            </svg>
+            <p>Selecione uma empresa e um robô para exibir o formulário dinâmico</p>
           </div>
-          <div class="form-group">
-            <label>Repetição</label>
-            <select ng-model="formAg.repeticao">
-              <option value="daily">Diário</option>
-              <option value="weekly">Semanal</option>
-              <option value="monthly">Mensal</option>
-            </select>
+        </div>
+
+        <div ng-if="paramEmpresa && paramRobo && paramSchema" class="table-card">
+          <div class="table-head">
+            <span class="table-title">Parâmetros — {{getEmpresaNome(paramEmpresa)}} × {{getRoboNome(paramRobo)}}</span>
           </div>
-          <div class="form-group full">
-            <label>Dias da Semana</label>
-            <div class="cron-builder">
-              <div class="cron-day" ng-repeat="d in diasSemana" ng-class="{selected: formAg.dias[d.val]}" ng-click="toggleDia(d.val)">{{d.label}}</div>
+          <div class="panel-body--lg">
+            <div class="form-grid">
+              <div class="form-group" ng-repeat="field in paramSchema"
+                ng-class="{'full': $last && paramSchema.length % 2 !== 0}">
+                <label>{{field.nome}} <span ng-if="field.obrigatorio" class="required-marker">*</span></label>
+                <input ng-if="field.tipo!=='password' && field.tipo!=='select'" type="text"
+                  ng-model="paramValues[field.nome]" placeholder="Inserir {{field.nome}}">
+                <input ng-if="field.tipo==='password'" type="password" ng-model="paramValues[field.nome]"
+                  placeholder="••••••••">
+                <select ng-if="field.tipo==='select'" ng-model="paramValues[field.nome]">
+                  <option value="">Selecionar...</option>
+                  <option ng-repeat="opt in field.options">{{opt}}</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-submit">
+              <button class="btn btn-ghost">Testar Integração</button>
+              <button class="btn btn-primary">Salvar Configurações</button>
             </div>
           </div>
-          <div class="form-group full">
-            <label>Expressão Cron (gerada automaticamente)</label>
-            <input ng-model="formAg.cronExpr" class="input--cron" readonly>
+        </div>
+      </div>
+
+      <!-- ======================== AGENDAMENTOS ======================== -->
+      <div ng-if="page==='agendamentos'">
+        <div class="table-card">
+          <div class="table-head">
+            <span class="table-title">{{agendamentos.length}} agendamentos configurados</span>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Empresa</th>
+                <th>Robô</th>
+                <th>Recorrência</th>
+                <th>Próxima Execução</th>
+                <th>Status</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr ng-repeat="a in agendamentos">
+                <td class="primary">{{a.empresa}}</td>
+                <td>{{a.robo}}</td>
+                <td>
+                  <span class="schedule-desc">{{a.desc}}</span>
+                  <div class="schedule-cron-expr">{{a.cron}}</div>
+                </td>
+                <td class="mono">{{a.proxima}}</td>
+                <td>
+                  <label class="toggle">
+                    <input type="checkbox" ng-model="a.ativo">
+                    <span class="toggle-slider"></span>
+                  </label>
+                </td>
+                <td>
+                  <div class="action-group">
+                    <button class="btn btn-success btn--xs" ng-click="executarAgora(a)">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="icon-xs">
+                        <polygon points="5 3 19 12 5 21 5 3" />
+                      </svg>
+                      Executar Agora
+                    </button>
+                    <button class="icon-btn" title="Remover">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="3 6 5 6 21 6" />
+                        <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" />
+                      </svg>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ======================== ACESSO ======================== -->
+      <div ng-if="page==='acesso'">
+        <div class="table-card">
+          <div class="table-head">
+            <span class="table-title">Usuários do Sistema</span>
+            <div class="search-box">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8" />
+                <line x1="21" y1="21" x2="16.65" y2="16.65" />
+              </svg>
+              <input placeholder="Buscar usuário..." ng-model="buscaUsuario">
+            </div>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Nome</th>
+                <th>E-mail</th>
+                <th>Nível</th>
+                <th>Último Login</th>
+                <th>Status</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr ng-repeat="u in usuarios | filter:{nome: buscaUsuario}">
+                <td>
+                  <div class="user-cell">
+                    <div class="avatar avatar--sm"
+                      ng-style="{'background': 'linear-gradient(135deg,' + u.color1 + ',' + u.color2 + ')'}">
+                      {{u.iniciais}}</div>
+                    <span class="primary user-display-name">{{u.nome}}</span>
+                  </div>
+                </td>
+                <td class="td--sm">{{u.email}}</td>
+                <td><span class="badge" ng-class="u.nivel">{{u.nivelLabel}}</span></td>
+                <td class="mono">{{u.ultimoLogin}}</td>
+                <td><span class="badge" ng-class="u.ativo ? 'success' : 'inactive'"><span
+                      class="badge-dot"></span>{{u.ativo ? 'Ativo' : 'Inativo'}}</span></td>
+                <td>
+                  <div class="action-group">
+                    <button class="icon-btn" title="Editar permissões">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="11" width="18" height="11" rx="2" />
+                        <path d="M7 11V7a5 5 0 0110 0v4" />
+                      </svg>
+                    </button>
+                    <button class="icon-btn" title="Editar">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
+                        <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4z" />
+                      </svg>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="table-card mt-20">
+          <div class="table-head"><span class="table-title">Permissões por Perfil</span></div>
+          <div class="panel-body">
+            <table>
+              <thead>
+                <tr>
+                  <th>Funcionalidade</th>
+                  <th class="text-center">Admin</th>
+                  <th class="text-center">Manager</th>
+                  <th class="text-center">Viewer</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr ng-repeat="p in permissoes">
+                  <td class="primary">{{p.func}}</td>
+                  <td class="text-center"><span ng-if="p.admin" class="perm-allowed">✓</span><span ng-if="!p.admin"
+                      class="perm-denied">—</span></td>
+                  <td class="text-center"><span ng-if="p.manager" class="perm-allowed">✓</span><span ng-if="!p.manager"
+                      class="perm-denied">—</span></td>
+                  <td class="text-center"><span ng-if="p.viewer" class="perm-allowed">✓</span><span ng-if="!p.viewer"
+                      class="perm-denied">—</span></td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
       </div>
-      <div class="modal-footer">
-        <button class="btn btn-ghost" ng-click="fecharModal()">Cancelar</button>
-        <button class="btn btn-primary" ng-click="salvarAgendamento()">Criar Agendamento</button>
-      </div>
-    </div>
 
-    <!-- USUÁRIO MODAL -->
-    <div ng-if="modalType==='usuario'">
-      <div class="modal-header">
-        <span class="modal-title">Convidar Usuário</span>
-        <button class="modal-close" ng-click="fecharModal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
-      </div>
-      <div class="modal-body">
-        <div class="form-grid">
-          <div class="form-group full"><label>Nome Completo *</label><input ng-model="formUser.nome" placeholder="Nome do usuário"></div>
-          <div class="form-group full"><label>E-mail *</label><input ng-model="formUser.email" type="email" placeholder="usuario@empresa.com"></div>
-          <div class="form-group full">
-            <label>Nível de Acesso</label>
-            <select ng-model="formUser.nivel">
-              <option value="viewer">Viewer — somente leitura</option>
-              <option value="manager">Manager — leitura + execuções</option>
-              <option value="admin">Admin — acesso total</option>
-            </select>
+    </div><!-- /content -->
+  </div><!-- /main -->
+
+  <!-- MODAL -->
+  <div class="modal-overlay" ng-if="modalOpen" ng-click="fecharModal($event)">
+    <div class="modal" ng-click="$event.stopPropagation()">
+
+      <!-- EMPRESA MODAL -->
+      <div ng-if="modalType==='empresa'">
+        <div class="modal-header">
+          <span class="modal-title">{{editando ? 'Editar Empresa' : 'Nova Empresa'}}</span>
+          <button class="modal-close" ng-click="fecharModal()"><svg viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg></button>
+        </div>
+        <div class="modal-body">
+          <div class="form-grid">
+            <div class="form-group full"><label>Razão Social *</label><input ng-model="formEmpresa.nome"
+                placeholder="Nome da empresa"></div>
+            <div class="form-group"><label>CNPJ *</label><input ng-model="formEmpresa.cnpj"
+                placeholder="00.000.000/0001-00"></div>
+            <div class="form-group"><label>Inscrição Estadual</label><input ng-model="formEmpresa.ie"
+                placeholder="000.000.000.000"></div>
+            <div class="form-group full"><label>E-mail de Notificação</label><input ng-model="formEmpresa.email"
+                placeholder="notificacoes@empresa.com" type="email"></div>
           </div>
         </div>
-      </div>
-      <div class="modal-footer">
-        <button class="btn btn-ghost" ng-click="fecharModal()">Cancelar</button>
-        <button class="btn btn-primary" ng-click="salvarUsuario()">Enviar Convite</button>
-      </div>
-    </div>
-
-    <!-- LOG MODAL -->
-    <div ng-if="modalType==='log'">
-      <div class="modal-header">
-        <span class="modal-title modal-title--mono">$ Log — {{logTarget.robot}}</span>
-        <button class="modal-close" ng-click="fecharModal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
-      </div>
-      <div class="modal-body">
-        <div class="terminal">
-          <div class="log-line" ng-repeat="l in terminalLogs">
-            <span class="log-ts">{{l.ts}}</span>
-            <span class="log-level" ng-class="l.level">{{l.level | uppercase}}</span>
-            <span class="log-msg">{{l.msg}}</span>
-          </div>
+        <div class="modal-footer">
+          <button class="btn btn-ghost" ng-click="fecharModal()">Cancelar</button>
+          <button class="btn btn-primary" ng-click="salvarEmpresa()">{{editando ? 'Salvar' : 'Cadastrar'}}</button>
         </div>
       </div>
-      <div class="modal-footer">
-        <button class="btn btn-ghost">Baixar .txt</button>
-        <button class="btn btn-ghost" ng-click="fecharModal()">Fechar</button>
-      </div>
-    </div>
 
+      <!-- ROBÔ MODAL -->
+      <div ng-if="modalType==='robo'">
+        <div class="modal-header">
+          <span class="modal-title">Registrar Novo Robô</span>
+          <button class="modal-close" ng-click="fecharModal()"><svg viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg></button>
+        </div>
+        <div class="modal-body">
+          <div class="form-grid">
+            <div class="form-group full"><label>Nome do Robô *</label><input ng-model="formRobo.nome"
+                placeholder="ex: Robô Fiscal - Emitir NF"></div>
+            <div class="form-group"><label>Módulo</label>
+              <select ng-model="formRobo.modulo">
+                <option>Fiscal</option>
+                <option>Comercial</option>
+                <option>Financeiro</option>
+                <option>RH</option>
+                <option>Logística</option>
+              </select>
+            </div>
+            <div class="form-group"><label>Versão</label><input ng-model="formRobo.versao" placeholder="1.0.0"></div>
+            <div class="form-group full"><label>Descrição</label><textarea ng-model="formRobo.descricao"
+                placeholder="Descreva o que este robô faz..."></textarea></div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-ghost" ng-click="fecharModal()">Cancelar</button>
+          <button class="btn btn-primary" ng-click="salvarRobo()">Registrar</button>
+        </div>
+      </div>
+
+      <!-- AGENDAMENTO MODAL -->
+      <div ng-if="modalType==='agendamento'">
+        <div class="modal-header">
+          <span class="modal-title">Novo Agendamento</span>
+          <button class="modal-close" ng-click="fecharModal()"><svg viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg></button>
+        </div>
+        <div class="modal-body">
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Empresa *</label>
+              <select ng-model="formAg.empresa">
+                <option value="">Selecionar...</option>
+                <option ng-repeat="e in empresas" value="{{e.id}}">{{e.nome}}</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Robô *</label>
+              <select ng-model="formAg.robo">
+                <option value="">Selecionar...</option>
+                <option ng-repeat="r in robos" value="{{r.id}}">{{r.nome}}</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Horário</label>
+              <input type="time" ng-model="formAg.hora" value="08:00">
+            </div>
+            <div class="form-group">
+              <label>Repetição</label>
+              <select ng-model="formAg.repeticao">
+                <option value="daily">Diário</option>
+                <option value="weekly">Semanal</option>
+                <option value="monthly">Mensal</option>
+              </select>
+            </div>
+            <div class="form-group full">
+              <label>Dias da Semana</label>
+              <div class="cron-builder">
+                <div class="cron-day" ng-repeat="d in diasSemana" ng-class="{selected: formAg.dias[d.val]}"
+                  ng-click="toggleDia(d.val)">{{d.label}}</div>
+              </div>
+            </div>
+            <div class="form-group full">
+              <label>Expressão Cron (gerada automaticamente)</label>
+              <input ng-model="formAg.cronExpr" class="input--cron" readonly>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-ghost" ng-click="fecharModal()">Cancelar</button>
+          <button class="btn btn-primary" ng-click="salvarAgendamento()">Criar Agendamento</button>
+        </div>
+      </div>
+
+      <!-- USUÁRIO MODAL -->
+      <div ng-if="modalType==='usuario'">
+        <div class="modal-header">
+          <span class="modal-title">Convidar Usuário</span>
+          <button class="modal-close" ng-click="fecharModal()"><svg viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg></button>
+        </div>
+        <div class="modal-body">
+          <div class="form-grid">
+            <div class="form-group full"><label>Nome Completo *</label><input ng-model="formUser.nome"
+                placeholder="Nome do usuário"></div>
+            <div class="form-group full"><label>E-mail *</label><input ng-model="formUser.email" type="email"
+                placeholder="usuario@empresa.com"></div>
+            <div class="form-group full">
+              <label>Nível de Acesso</label>
+              <select ng-model="formUser.nivel">
+                <option value="viewer">Viewer — somente leitura</option>
+                <option value="manager">Manager — leitura + execuções</option>
+                <option value="admin">Admin — acesso total</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-ghost" ng-click="fecharModal()">Cancelar</button>
+          <button class="btn btn-primary" ng-click="salvarUsuario()">Enviar Convite</button>
+        </div>
+      </div>
+
+      <!-- LOG MODAL -->
+      <div ng-if="modalType==='log'">
+        <div class="modal-header">
+          <span class="modal-title modal-title--mono">$ Log — {{logTarget.robot}}</span>
+          <button class="modal-close" ng-click="fecharModal()"><svg viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg></button>
+        </div>
+        <div class="modal-body">
+          <div class="terminal">
+            <div class="log-line" ng-repeat="l in terminalLogs">
+              <span class="log-ts">{{l.ts}}</span>
+              <span class="log-level" ng-class="l.level">{{l.level | uppercase}}</span>
+              <span class="log-msg">{{l.msg}}</span>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-ghost">Baixar .txt</button>
+          <button class="btn btn-ghost" ng-click="fecharModal()">Fechar</button>
+        </div>
+      </div>
+
+    </div>
   </div>
-</div>
 
-<script>
-angular.module('OrchestratorApp', [])
-.controller('MainCtrl', function($scope, $interval) {
-  $scope.page = 'dashboard';
-  $scope.modalOpen = false;
-
-  // Lê dados salvos do login (lembrar-me)
-  var savedSession = JSON.parse(localStorage.getItem('rpa_session') || 'null');
-  if (savedSession) {
-    $scope.sessionUser = savedSession.email || savedSession.apikey || 'Admin Woelfer';
-  }
-
-  $scope.logout = function() {
-    // Se não marcou lembrar-me, limpa os dados salvos
-    var lembrar = localStorage.getItem('rpa_lembrar');
-    if (lembrar !== 'true') {
-      localStorage.removeItem('rpa_session');
-    }
-    window.location.href = 'login.html';
-  };
-  $scope.terminalOpen = false;
-  $scope.buscaEmpresa = '';
-  $scope.buscaUsuario = '';
-  $scope.paramEmpresa = '';
-  $scope.paramRobo = '';
-  $scope.paramValues = {};
-  $scope.selectedRobo = null;
-  $scope.filtroStatus = '';
-  $scope.filtroEmpresa = '';
-  $scope.filtroRobo = '';
-  $scope.formAg = { dias: {}, cronExpr: '0 8 * * 1-5', hora: '08:00', repeticao: 'weekly' };
-  $scope.formEmpresa = {};
-  $scope.formRobo = {};
-  $scope.formUser = { nivel: 'viewer' };
-  $scope.logTarget = {};
-
-  $scope.diasSemana = [
-    {label:'Seg',val:'1'},{label:'Ter',val:'2'},{label:'Qua',val:'3'},
-    {label:'Qui',val:'4'},{label:'Sex',val:'5'},{label:'Sáb',val:'6'},{label:'Dom',val:'0'}
-  ];
-
-  $scope.chartBars = [
-    {h:15,v:8},{h:10,v:5},{h:8,v:4},{h:12,v:6},{h:35,v:18},{h:55,v:28},
-    {h:75,v:38},{h:100,v:52},{h:88,v:45},{h:95,v:49},{h:82,v:42},{h:70,v:36},
-    {h:60,v:31},{h:75,v:38},{h:80,v:41},{h:72,v:37},{h:65,v:33},{h:55,v:28},
-    {h:45,v:23},{h:30,v:15},{h:20,v:10},{h:15,v:8},{h:10,v:5},{h:5,v:3}
-  ];
-
-  $scope.liveLogs = [
-    {ts:'14:32:01',robot:'Robô Fiscal',msg:'NF emitida com sucesso — CNPJ 12.345.678/0001-90'},
-    {ts:'14:31:55',robot:'Robô Comercial',msg:'Lead capturado — João Silva (joao@empresa.com)'},
-    {ts:'14:31:48',robot:'Robô Financeiro',msg:'Conciliação bancária iniciada — Conta 0001-2'},
-    {ts:'14:31:30',robot:'Robô Fiscal',msg:'Consultando SEFAZ — aguardando resposta...'},
-    {ts:'14:31:12',robot:'Robô RH',msg:'Folha de pagamento processada — 47 funcionários'},
-    {ts:'14:30:58',robot:'Robô Logística',msg:'Rastreamento atualizado — Pedido #78234'},
-  ];
-
-  $scope.falhas = [
-    {robot:'Robô Financeiro',empresa:'Acme Corp',tempo:'14:28:03',msg:'Timeout na conexão com ERP — port 5432'},
-    {robot:'Robô Fiscal',empresa:'Beta Ltda',tempo:'13:55:17',msg:'SEFAZ indisponível — código 503'},
-    {robot:'Robô Comercial',empresa:'Gamma S/A',tempo:'12:40:09',msg:'Credencial inválida — senha expirada'},
-  ];
-
-  $scope.empresas = [
-    {id:'e1',nome:'Acme Corporation',cnpj:'12.345.678/0001-90',ativo:true,robosCount:4,cadastro:'2025-01-15'},
-    {id:'e2',nome:'Beta Tecnologia Ltda',cnpj:'98.765.432/0001-11',ativo:true,robosCount:3,cadastro:'2025-03-22'},
-    {id:'e3',nome:'Gamma Indústria S/A',cnpj:'45.678.901/0001-55',ativo:true,robosCount:5,cadastro:'2025-02-08'},
-    {id:'e4',nome:'Delta Serviços ME',cnpj:'11.222.333/0001-44',ativo:false,robosCount:1,cadastro:'2024-11-30'},
-    {id:'e5',nome:'Epsilon Comércio Ltda',cnpj:'77.888.999/0001-22',ativo:true,robosCount:2,cadastro:'2026-01-05'},
-  ];
-
-  $scope.robos = [
-    {id:'r1',nome:'Robô Fiscal — Emitir NF',status:'running',statusLabel:'Ativo',execucoes:1423,taxa:97,iconBg:'rgba(79,142,247,0.15)',iconColor:'var(--accent)',
-     schema:[{nome:'url_sefaz',tipo:'texto',obrigatorio:true},{nome:'certificado_a1',tipo:'password',obrigatorio:true},{nome:'cnpj_emitente',tipo:'texto',obrigatorio:true}]},
-    {id:'r2',nome:'Robô Comercial — Leads',status:'running',statusLabel:'Ativo',execucoes:856,taxa:94,iconBg:'rgba(34,211,160,0.15)',iconColor:'var(--green)',
-     schema:[{nome:'url_crm',tipo:'texto',obrigatorio:true},{nome:'api_key',tipo:'password',obrigatorio:true},{nome:'pipeline_id',tipo:'numero',obrigatorio:false}]},
-    {id:'r3',nome:'Robô Financeiro — Conciliação',status:'error',statusLabel:'Erro',execucoes:342,taxa:78,iconBg:'rgba(240,87,87,0.15)',iconColor:'var(--red)',
-     schema:[{nome:'host_db',tipo:'texto',obrigatorio:true},{nome:'usuario_db',tipo:'texto',obrigatorio:true},{nome:'senha_db',tipo:'password',obrigatorio:true},{nome:'porta',tipo:'numero',obrigatorio:false}]},
-    {id:'r4',nome:'Robô RH — Folha Pagamento',status:'success',statusLabel:'OK',execucoes:224,taxa:99,iconBg:'rgba(167,139,250,0.15)',iconColor:'var(--purple)',
-     schema:[{nome:'sistema_rh',tipo:'select',obrigatorio:true,options:['Totvs','Datasul','Senior']},{nome:'login',tipo:'texto',obrigatorio:true},{nome:'senha',tipo:'password',obrigatorio:true}]},
-    {id:'r5',nome:'Robô Logística — Rastreamento',status:'running',statusLabel:'Ativo',execucoes:567,taxa:91,iconBg:'rgba(245,166,35,0.15)',iconColor:'var(--amber)',
-     schema:[{nome:'api_transportadora',tipo:'texto',obrigatorio:true},{nome:'token',tipo:'password',obrigatorio:true}]},
-    {id:'r6',nome:'Robô Fiscal — SPED',status:'pending',statusLabel:'Aguardando',execucoes:89,taxa:85,iconBg:'rgba(34,211,238,0.15)',iconColor:'var(--cyan)',
-     schema:[{nome:'url_sistema',tipo:'texto',obrigatorio:true},{nome:'usuario',tipo:'texto',obrigatorio:true},{nome:'senha_erp',tipo:'password',obrigatorio:true}]},
-  ];
-
-  $scope.execucoes = [
-    {id:'8821',robo:'Robô Fiscal — Emitir NF',empresa:'Acme Corp',inicio:'14:32:01',duracao:'00:01:23',status:'success',statusLabel:'Sucesso'},
-    {id:'8820',robo:'Robô Comercial — Leads',empresa:'Beta Ltda',inicio:'14:30:15',duracao:'00:00:47',status:'running',statusLabel:'Processando'},
-    {id:'8819',robo:'Robô Financeiro',empresa:'Acme Corp',inicio:'14:28:03',duracao:'00:05:11',status:'error',statusLabel:'Erro'},
-    {id:'8818',robo:'Robô RH — Folha',empresa:'Gamma S/A',inicio:'14:20:00',duracao:'00:03:42',status:'success',statusLabel:'Sucesso'},
-    {id:'8817',robo:'Robô Logística',empresa:'Delta ME',inicio:'14:15:30',duracao:'00:00:58',status:'success',statusLabel:'Sucesso'},
-    {id:'8816',robo:'Robô Fiscal — SPED',empresa:'Epsilon Ltda',inicio:'13:55:17',duracao:'00:02:30',status:'error',statusLabel:'Erro'},
-    {id:'8815',robo:'Robô Comercial — Leads',empresa:'Gamma S/A',inicio:'13:40:00',duracao:'00:01:12',status:'success',statusLabel:'Sucesso'},
-    {id:'8814',robo:'Robô Fiscal — Emitir NF',empresa:'Beta Ltda',inicio:'12:30:00',duracao:'00:01:05',status:'success',statusLabel:'Sucesso'},
-  ];
-
-  $scope.terminalLogs = [];
-
-  $scope.agendamentos = [
-    {empresa:'Acme Corp',robo:'Robô Fiscal — Emitir NF',desc:'Segunda a Sexta às 08:00',cron:'0 8 * * 1-5',proxima:'09/06 08:00',ativo:true},
-    {empresa:'Beta Ltda',robo:'Robô Comercial — Leads',desc:'Todo dia às 06:00',cron:'0 6 * * *',proxima:'09/06 06:00',ativo:true},
-    {empresa:'Gamma S/A',robo:'Robô Financeiro',desc:'Toda segunda às 09:00',cron:'0 9 * * 1',proxima:'15/06 09:00',ativo:false},
-    {empresa:'Acme Corp',robo:'Robô RH — Folha',desc:'1º dia do mês às 07:00',cron:'0 7 1 * *',proxima:'01/07 07:00',ativo:true},
-    {empresa:'Epsilon Ltda',robo:'Robô Logística',desc:'A cada 6 horas',cron:'0 */6 * * *',proxima:'09/06 18:00',ativo:true},
-  ];
-
-  $scope.usuarios = [
-    {nome:'Gabriel Woelfer',email:'dev.grsilva@gmail.com',nivel:'admin',nivelLabel:'Admin',ultimoLogin:'08/06 14:30',ativo:true,iniciais:'GW',color1:'#4f8ef7',color2:'#a78bfa'},
-    {nome:'Gabriela Nascimento',email:'gabriela@empresa.com',nivel:'manager',nivelLabel:'Manager',ultimoLogin:'08/06 11:15',ativo:true,iniciais:'GN',color1:'#22d3a0',color2:'#22d3ee'},
-    {nome:'Kamilly Birkner',email:'kamilly@empresa.com',nivel:'viewer',nivelLabel:'Viewer',ultimoLogin:'07/06 16:45',ativo:true,iniciais:'KB',color1:'#f5a623',color2:'#f05757'},
-    {nome:'Carlos Oliveira',email:'carlos.ops@empresa.com',nivel:'manager',nivelLabel:'Manager',ultimoLogin:'06/06 09:20',ativo:true,iniciais:'CO',color1:'#a78bfa',color2:'#4f8ef7'},
-    {nome:'Ana Paula Ramos',email:'ana.ramos@empresa.com',nivel:'viewer',nivelLabel:'Viewer',ultimoLogin:'01/06 08:00',ativo:false,iniciais:'AP',color1:'#8b92a5',color2:'#545c6e'},
-  ];
-
-  $scope.permissoes = [
-    {func:'Dashboard & Monitor',admin:true,manager:true,viewer:true},
-    {func:'Cadastrar/Editar Empresas',admin:true,manager:false,viewer:false},
-    {func:'Visualizar Empresas',admin:true,manager:true,viewer:true},
-    {func:'Gerenciar Catálogo de Robôs',admin:true,manager:false,viewer:false},
-    {func:'Configurar Parâmetros',admin:true,manager:true,viewer:false},
-    {func:'Criar/Editar Agendamentos',admin:true,manager:true,viewer:false},
-    {func:'Executar Robô Manualmente',admin:true,manager:true,viewer:false},
-    {func:'Ver Histórico de Execuções',admin:true,manager:true,viewer:true},
-    {func:'Baixar Logs',admin:true,manager:true,viewer:false},
-    {func:'Gerenciar Usuários (RBAC)',admin:true,manager:false,viewer:false},
-  ];
-
-  var fakeLogs = [
-    {ts:'14:28:01',level:'info',msg:'Iniciando execução — Robô Financeiro v2.1.0'},
-    {ts:'14:28:02',level:'info',msg:'Conectando ao banco de dados — host:erp.acme.com:5432'},
-    {ts:'14:28:04',level:'info',msg:'Autenticando com credenciais do cofre (AES-256)'},
-    {ts:'14:28:06',level:'warn',msg:'Tempo de resposta elevado — 2800ms (threshold: 2000ms)'},
-    {ts:'14:28:09',level:'info',msg:'Executando query de conciliação — período: 01/06-08/06'},
-    {ts:'14:28:15',level:'error',msg:'FATAL: Connection timeout após 5000ms — retry 1/3'},
-    {ts:'14:28:20',level:'error',msg:'FATAL: Connection timeout após 5000ms — retry 2/3'},
-    {ts:'14:28:25',level:'error',msg:'FATAL: Connection timeout após 5000ms — retry 3/3'},
-    {ts:'14:28:25',level:'error',msg:'Execução encerrada com FAILED — código de saída: 1'},
-  ];
-
-  $scope.abrirTerminal = function(ex) {
-    $scope.selectedExec = ex;
-    $scope.terminalLogs = fakeLogs;
-    $scope.terminalOpen = true;
-  };
-
-  $scope.verLog = function(f) {
-    $scope.logTarget = f;
-    $scope.terminalLogs = fakeLogs;
-    $scope.modalType = 'log';
-    $scope.modalOpen = true;
-  };
-
-  $scope.filtrarExecucoes = function(ex) {
-    if ($scope.filtroStatus && ex.status !== $scope.filtroStatus) return false;
-    return true;
-  };
-
-  $scope.openModal = function(type) {
-    $scope.modalType = type;
-    $scope.modalOpen = true;
-    $scope.editando = false;
-    $scope.formEmpresa = {};
-    $scope.formRobo = {};
-    $scope.formUser = { nivel: 'viewer' };
-    $scope.formAg = { dias: {}, hora: '08:00', repeticao: 'weekly', cronExpr: '0 8 * * 1-5' };
-  };
-
-  $scope.fecharModal = function(ev) {
-    if (!ev || ev.target === ev.currentTarget) $scope.modalOpen = false;
-  };
-
-  $scope.editarEmpresa = function(e) {
-    $scope.formEmpresa = angular.copy(e);
-    $scope.editando = true;
-    $scope.modalType = 'empresa';
-    $scope.modalOpen = true;
-  };
-
-  $scope.salvarEmpresa = function() {
-    if (!$scope.formEmpresa.nome) return;
-    if ($scope.editando) {
-      var idx = $scope.empresas.findIndex(function(e){ return e.id === $scope.formEmpresa.id; });
-      if (idx >= 0) $scope.empresas[idx] = angular.copy($scope.formEmpresa);
-    } else {
-      $scope.empresas.push({
-        id: 'e' + Date.now(),
-        nome: $scope.formEmpresa.nome,
-        cnpj: $scope.formEmpresa.cnpj || '—',
-        ativo: true,
-        robosCount: 0,
-        cadastro: new Date().toISOString().split('T')[0]
-      });
-    }
-    $scope.modalOpen = false;
-  };
-
-  $scope.salvarRobo = function() {
-    if (!$scope.formRobo.nome) return;
-    $scope.robos.push({
-      id: 'r' + Date.now(),
-      nome: $scope.formRobo.nome,
-      status: 'pending', statusLabel: 'Aguardando',
-      execucoes: 0, taxa: 0,
-      iconBg: 'rgba(139,146,165,0.15)', iconColor: 'var(--text2)',
-      schema: []
-    });
-    $scope.modalOpen = false;
-  };
-
-  $scope.salvarUsuario = function() {
-    if (!$scope.formUser.email) return;
-    var parts = ($scope.formUser.nome || 'Novo Usuário').split(' ');
-    $scope.usuarios.push({
-      nome: $scope.formUser.nome || 'Novo Usuário',
-      email: $scope.formUser.email,
-      nivel: $scope.formUser.nivel,
-      nivelLabel: {admin:'Admin',manager:'Manager',viewer:'Viewer'}[$scope.formUser.nivel],
-      ultimoLogin: '—',
-      ativo: true,
-      iniciais: (parts[0][0] + (parts[1] ? parts[1][0] : '')).toUpperCase(),
-      color1: '#4f8ef7', color2: '#a78bfa'
-    });
-    $scope.modalOpen = false;
-  };
-
-  $scope.salvarAgendamento = function() {
-    $scope.agendamentos.push({
-      empresa: $scope.getEmpresaNome($scope.formAg.empresa) || '—',
-      robo: $scope.getRoboNome($scope.formAg.robo) || '—',
-      desc: 'Personalizado ' + $scope.formAg.hora,
-      cron: $scope.formAg.cronExpr,
-      proxima: '09/06 ' + $scope.formAg.hora,
-      ativo: true
-    });
-    $scope.modalOpen = false;
-  };
-
-  $scope.executarAgora = function(a) {
-    $scope.execucoes.unshift({
-      id: String(9000 + Math.floor(Math.random()*100)),
-      robo: a.robo, empresa: a.empresa,
-      inicio: new Date().toTimeString().slice(0,8),
-      duracao: '00:00:00', status: 'running', statusLabel: 'Processando'
-    });
-    $scope.page = 'execucoes';
-  };
-
-  $scope.reexecutar = function(ex) {
-    $scope.execucoes.unshift({
-      id: String(parseInt(ex.id) + Math.floor(Math.random()*10)),
-      robo: ex.robo, empresa: ex.empresa,
-      inicio: new Date().toTimeString().slice(0,8),
-      duracao: '00:00:00', status: 'running', statusLabel: 'Processando'
-    });
-  };
-
-  $scope.selecionarRobo = function(r) {
-    $scope.selectedRobo = ($scope.selectedRobo && $scope.selectedRobo.id === r.id) ? null : r;
-  };
-
-  $scope.addSchemaField = function(r) {
-    r.schema.push({nome: '', tipo: 'texto', obrigatorio: false});
-  };
-
-  $scope.removeSchemaField = function(r, idx) {
-    r.schema.splice(idx, 1);
-  };
-
-  $scope.loadParamSchema = function() {
-    if (!$scope.paramRobo) return;
-    var r = $scope.robos.find(function(x){ return x.id === $scope.paramRobo; });
-    $scope.paramSchema = r ? r.schema : [];
-    $scope.paramValues = {};
-  };
-
-  $scope.getEmpresaNome = function(id) {
-    var e = $scope.empresas.find(function(x){ return x.id === id; });
-    return e ? e.nome : '';
-  };
-
-  $scope.getRoboNome = function(id) {
-    var r = $scope.robos.find(function(x){ return x.id === id; });
-    return r ? r.nome : '';
-  };
-
-  $scope.toggleDia = function(val) {
-    $scope.formAg.dias[val] = !$scope.formAg.dias[val];
-    var dias = Object.keys($scope.formAg.dias).filter(function(k){ return $scope.formAg.dias[k]; }).join(',');
-    var h = ($scope.formAg.hora || '08:00').split(':');
-    $scope.formAg.cronExpr = h[1] + ' ' + h[0] + ' * * ' + (dias || '*');
-  };
-
-  // Live feed update
-  var msgs = [
-    ['Robô Fiscal','NF #00043521 emitida — OK'],
-    ['Robô Comercial','Lead qualificado — score 87/100'],
-    ['Robô Logística','Pedido #78241 atualizado — Em trânsito'],
-    ['Robô RH','Ponto eletrônico sincronizado — 12 registros'],
-    ['Robô Financeiro','Heartbeat recebido — tarefa em progresso'],
-    ['Robô Fiscal','Consultando tabela ICMS — SP'],
-  ];
-  var msgIdx = 0;
-  $interval(function() {
-    var now = new Date();
-    var ts = ('0'+now.getHours()).slice(-2)+':'+('0'+now.getMinutes()).slice(-2)+':'+('0'+now.getSeconds()).slice(-2);
-    var m = msgs[msgIdx % msgs.length];
-    $scope.liveLogs.unshift({ts:ts, robot:m[0], msg:m[1]});
-    if ($scope.liveLogs.length > 8) $scope.liveLogs.pop();
-    msgIdx++;
-  }, 3000);
-});
-</script>
+  <script src="app.js"></script>
 </body>
+
 </html>
