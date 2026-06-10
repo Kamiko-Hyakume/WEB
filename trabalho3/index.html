@@ -454,40 +454,40 @@ textarea { resize: vertical; min-height: 80px; }
       <div class="kpi-grid">
         <div class="kpi-card blue">
           <div class="kpi-label">Execuções Hoje</div>
-          <div class="kpi-value" style="color:var(--accent)">247</div>
+          <div class="kpi-value kpi-value--accent">247</div>
           <div class="kpi-sub"><span class="kpi-delta up">↑ 18%</span> vs ontem</div>
         </div>
         <div class="kpi-card green">
           <div class="kpi-label">Robôs Ativos</div>
-          <div class="kpi-value" style="color:var(--green)">8</div>
+          <div class="kpi-value kpi-value--green">8</div>
           <div class="kpi-sub"><span class="kpi-delta up">↑ 2</span> novos online</div>
         </div>
         <div class="kpi-card amber">
           <div class="kpi-label">Taxa de Sucesso</div>
-          <div class="kpi-value" style="color:var(--amber)">94.3%</div>
+          <div class="kpi-value kpi-value--amber">94.3%</div>
           <div class="kpi-sub"><span class="kpi-delta down">↓ 0.8%</span> vs semana</div>
         </div>
         <div class="kpi-card red">
           <div class="kpi-label">Falhas 24h</div>
-          <div class="kpi-value" style="color:var(--red)">14</div>
+          <div class="kpi-value kpi-value--red">14</div>
           <div class="kpi-sub"><span class="kpi-delta down">↑ 3</span> desde ontem</div>
         </div>
       </div>
 
-      <div class="grid2" style="margin-bottom:24px">
+      <div class="grid2 grid2--mb">
         <div class="table-card">
           <div class="table-head">
             <span class="table-title">Volumetria por Hora</span>
-            <div class="tabs" style="margin:0">
+            <div class="tabs tabs--flush">
               <div class="tab active">Hoje</div>
               <div class="tab">7 dias</div>
             </div>
           </div>
-          <div style="padding:16px">
+          <div class="panel-body">
             <div class="chart-area">
               <div class="bar" ng-repeat="b in chartBars" ng-style="{height: b.h+'%'}" title="{{b.v}} execuções"></div>
             </div>
-            <div style="display:flex;justify-content:space-between;padding-top:6px;font-size:11px;color:var(--text3);font-family:var(--mono)">
+            <div class="chart-x-labels">
               <span>00h</span><span>04h</span><span>08h</span><span>12h</span><span>16h</span><span>20h</span><span>23h</span>
             </div>
           </div>
@@ -519,8 +519,8 @@ textarea { resize: vertical; min-height: 80px; }
               <td class="primary">{{f.robot}}</td>
               <td>{{f.empresa}}</td>
               <td class="mono">{{f.tempo}}</td>
-              <td><span style="color:var(--red);font-size:12px">{{f.msg}}</span></td>
-              <td><button class="btn btn-ghost" style="font-size:12px;padding:4px 10px" ng-click="verLog(f)">Ver Log</button></td>
+              <td><span class="error-text--sm">{{f.msg}}</span></td>
+              <td><button class="btn btn-ghost btn--compact" ng-click="verLog(f)">Ver Log</button></td>
             </tr>
           </tbody>
         </table>
@@ -530,18 +530,18 @@ textarea { resize: vertical; min-height: 80px; }
     <!-- ======================== EXECUÇÕES ======================== -->
     <div ng-if="page==='execucoes'">
       <div class="section-header">
-        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-          <select ng-model="filtroStatus" style="width:140px">
+        <div class="filter-group">
+          <select ng-model="filtroStatus" class="select--sm">
             <option value="">Todos status</option>
             <option value="success">Sucesso</option>
             <option value="error">Erro</option>
             <option value="running">Processando</option>
           </select>
-          <select ng-model="filtroEmpresa" style="width:160px">
+          <select ng-model="filtroEmpresa" class="select--md">
             <option value="">Todas empresas</option>
             <option ng-repeat="e in empresas" value="{{e.id}}">{{e.nome}}</option>
           </select>
-          <select ng-model="filtroRobo" style="width:160px">
+          <select ng-model="filtroRobo" class="select--md">
             <option value="">Todos robôs</option>
             <option ng-repeat="r in robos" value="{{r.id}}">{{r.nome}}</option>
           </select>
@@ -553,7 +553,7 @@ textarea { resize: vertical; min-height: 80px; }
           <thead><tr><th>#ID</th><th>Robô</th><th>Empresa</th><th>Início</th><th>Duração</th><th>Status</th><th>Ações</th></tr></thead>
           <tbody>
             <tr ng-repeat="ex in execucoes | filter:filtrarExecucoes">
-              <td class="mono" style="color:var(--text3)">#{{ex.id}}</td>
+              <td class="mono td-id">#{{ex.id}}</td>
               <td class="primary">{{ex.robo}}</td>
               <td>{{ex.empresa}}</td>
               <td class="mono">{{ex.inicio}}</td>
@@ -563,7 +563,7 @@ textarea { resize: vertical; min-height: 80px; }
                 {{ex.statusLabel}}
               </span></td>
               <td>
-                <div style="display:flex;gap:6px">
+                <div class="action-group">
                   <button class="icon-btn" title="Ver log" ng-click="abrirTerminal(ex)">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
                   </button>
@@ -578,13 +578,13 @@ textarea { resize: vertical; min-height: 80px; }
       </div>
 
       <!-- TERMINAL -->
-      <div ng-if="terminalOpen" style="margin-top:20px">
+      <div ng-if="terminalOpen" class="terminal-section">
         <div class="table-card">
           <div class="table-head">
-            <span class="table-title" style="font-family:var(--mono)">$ log — Execução #{{selectedExec.id}} — {{selectedExec.robo}}</span>
-            <div style="display:flex;gap:8px">
-              <button class="btn btn-ghost" style="font-size:12px">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            <span class="table-title table-title--mono">$ log — Execução #{{selectedExec.id}} — {{selectedExec.robo}}</span>
+            <div class="btn-group">
+              <button class="btn btn-ghost btn--sm">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="icon-sm"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                 Baixar .txt
               </button>
               <button class="icon-btn" ng-click="terminalOpen=false">
@@ -592,7 +592,7 @@ textarea { resize: vertical; min-height: 80px; }
               </button>
             </div>
           </div>
-          <div style="padding:14px">
+          <div class="panel-body--sm">
             <div class="terminal">
               <div class="log-line" ng-repeat="l in terminalLogs">
                 <span class="log-ts">{{l.ts}}</span>
@@ -624,10 +624,10 @@ textarea { resize: vertical; min-height: 80px; }
               <td class="primary">{{e.nome}}</td>
               <td class="mono">{{e.cnpj}}</td>
               <td><span class="badge" ng-class="e.ativo ? 'success' : 'inactive'"><span class="badge-dot"></span>{{e.ativo ? 'Ativo' : 'Inativo'}}</span></td>
-              <td class="mono" style="color:var(--accent)">{{e.robosCount}}</td>
+              <td class="mono td-count--accent">{{e.robosCount}}</td>
               <td class="mono">{{e.cadastro}}</td>
               <td>
-                <div style="display:flex;gap:6px">
+                <div class="action-group">
                   <button class="icon-btn" title="Editar" ng-click="editarEmpresa(e)">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                   </button>
@@ -644,7 +644,7 @@ textarea { resize: vertical; min-height: 80px; }
 
     <!-- ======================== ROBÔS ======================== -->
     <div ng-if="page==='robos'">
-      <div class="alert alert-info" style="margin-bottom:20px">
+      <div class="alert alert-info alert--spaced">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
         Defina os JSON Schemas de cada robô. Esses schemas guiam o formulário dinâmico da Tela de Parâmetros.
       </div>
@@ -659,23 +659,23 @@ textarea { resize: vertical; min-height: 80px; }
               <div class="robot-name">{{r.nome}}</div>
               <div class="robot-id">{{r.id}}</div>
             </div>
-            <span class="badge" ng-class="r.status" style="margin-left:auto">
+            <span class="badge ml-auto" ng-class="r.status">
               <span class="badge-dot"></span>{{r.statusLabel}}
             </span>
           </div>
           <div class="robot-stats">
             <div class="robot-stat">
               <div class="robot-stat-label">Execuções</div>
-              <div class="robot-stat-value" style="color:var(--accent)">{{r.execucoes}}</div>
+              <div class="robot-stat-value robot-stat-value--accent">{{r.execucoes}}</div>
             </div>
             <div class="robot-stat">
               <div class="robot-stat-label">Sucesso</div>
-              <div class="robot-stat-value" style="color:var(--green)">{{r.taxa}}%</div>
+              <div class="robot-stat-value robot-stat-value--green">{{r.taxa}}%</div>
             </div>
           </div>
-          <div style="margin-top:10px">
-            <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text3);margin-bottom:4px">
-              <span>Taxa de sucesso</span><span style="color:var(--green)">{{r.taxa}}%</span>
+          <div class="robot-progress">
+            <div class="progress-labels">
+              <span>Taxa de sucesso</span><span class="label--green">{{r.taxa}}%</span>
             </div>
             <div class="progress-bar">
               <div class="progress-fill" ng-style="{width: r.taxa+'%', background: r.taxa >= 90 ? 'var(--green)' : r.taxa >= 70 ? 'var(--amber)' : 'var(--red)'}"></div>
@@ -685,20 +685,20 @@ textarea { resize: vertical; min-height: 80px; }
       </div>
 
       <!-- SCHEMA EDITOR -->
-      <div ng-if="selectedRobo" style="margin-top:24px">
+      <div ng-if="selectedRobo" class="robot-detail-section">
         <div class="table-card">
           <div class="table-head">
             <span class="table-title">Editor de Schema — {{selectedRobo.nome}}</span>
-            <div style="display:flex;gap:8px">
-              <button class="btn btn-ghost" style="font-size:12px">Nova Versão</button>
-              <button class="btn btn-primary" style="font-size:12px" ng-click="addSchemaField(selectedRobo)">+ Adicionar Campo</button>
+            <div class="btn-group">
+              <button class="btn btn-ghost btn--sm">Nova Versão</button>
+              <button class="btn btn-primary btn--sm" ng-click="addSchemaField(selectedRobo)">+ Adicionar Campo</button>
             </div>
           </div>
-          <div style="padding:16px">
-            <div style="display:grid;grid-template-columns:1fr 1fr auto auto;gap:8px;margin-bottom:8px;padding:0 0 8px;border-bottom:1px solid var(--border)">
-              <span style="font-size:11px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.07em">Nome do Campo</span>
-              <span style="font-size:11px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.07em">Tipo</span>
-              <span style="font-size:11px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.07em">Obrigatório</span>
+          <div class="panel-body">
+            <div class="schema-header">
+              <span class="schema-col-label">Nome do Campo</span>
+              <span class="schema-col-label">Tipo</span>
+              <span class="schema-col-label">Obrigatório</span>
               <span></span>
             </div>
             <div class="schema-row" ng-repeat="field in selectedRobo.schema">
@@ -710,7 +710,7 @@ textarea { resize: vertical; min-height: 80px; }
                 <option value="boolean">boolean</option>
                 <option value="select">select</option>
               </select>
-              <label class="toggle" style="margin:auto">
+              <label class="toggle toggle--centered">
                 <input type="checkbox" ng-model="field.obrigatorio">
                 <span class="toggle-slider"></span>
               </label>
@@ -718,7 +718,7 @@ textarea { resize: vertical; min-height: 80px; }
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
               </button>
             </div>
-            <div style="margin-top:14px;display:flex;justify-content:flex-end;gap:8px">
+            <div class="form-actions">
               <button class="btn btn-ghost">Cancelar</button>
               <button class="btn btn-primary">Salvar Schema</button>
             </div>
@@ -734,7 +734,7 @@ textarea { resize: vertical; min-height: 80px; }
         Selecione uma empresa e um robô para exibir e preencher os parâmetros customizados da integração.
       </div>
 
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:24px">
+      <div class="robot-detail-grid">
         <div class="form-group">
           <label>Empresa</label>
           <select ng-model="paramEmpresa" ng-change="loadParamSchema()">
@@ -762,10 +762,10 @@ textarea { resize: vertical; min-height: 80px; }
         <div class="table-head">
           <span class="table-title">Parâmetros — {{getEmpresaNome(paramEmpresa)}} × {{getRoboNome(paramRobo)}}</span>
         </div>
-        <div style="padding:20px">
+        <div class="panel-body--lg">
           <div class="form-grid">
             <div class="form-group" ng-repeat="field in paramSchema" ng-class="{'full': $last && paramSchema.length % 2 !== 0}">
-              <label>{{field.nome}} <span ng-if="field.obrigatorio" style="color:var(--red)">*</span></label>
+              <label>{{field.nome}} <span ng-if="field.obrigatorio" class="required-marker">*</span></label>
               <input ng-if="field.tipo!=='password' && field.tipo!=='select'" type="text" ng-model="paramValues[field.nome]" placeholder="Inserir {{field.nome}}">
               <input ng-if="field.tipo==='password'" type="password" ng-model="paramValues[field.nome]" placeholder="••••••••">
               <select ng-if="field.tipo==='select'" ng-model="paramValues[field.nome]">
@@ -774,7 +774,7 @@ textarea { resize: vertical; min-height: 80px; }
               </select>
             </div>
           </div>
-          <div style="margin-top:20px;display:flex;gap:10px;justify-content:flex-end">
+          <div class="form-submit">
             <button class="btn btn-ghost">Testar Integração</button>
             <button class="btn btn-primary">Salvar Configurações</button>
           </div>
@@ -795,8 +795,8 @@ textarea { resize: vertical; min-height: 80px; }
               <td class="primary">{{a.empresa}}</td>
               <td>{{a.robo}}</td>
               <td>
-                <span style="font-size:12px;color:var(--text2)">{{a.desc}}</span>
-                <div style="font-size:10px;font-family:var(--mono);color:var(--text3);margin-top:2px">{{a.cron}}</div>
+                <span class="schedule-desc">{{a.desc}}</span>
+                <div class="schedule-cron-expr">{{a.cron}}</div>
               </td>
               <td class="mono">{{a.proxima}}</td>
               <td>
@@ -806,9 +806,9 @@ textarea { resize: vertical; min-height: 80px; }
                 </label>
               </td>
               <td>
-                <div style="display:flex;gap:6px">
-                  <button class="btn btn-success" style="font-size:11px;padding:4px 10px" ng-click="executarAgora(a)">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                <div class="action-group">
+                  <button class="btn btn-success btn--xs" ng-click="executarAgora(a)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="icon-xs"><polygon points="5 3 19 12 5 21 5 3"/></svg>
                     Executar Agora
                   </button>
                   <button class="icon-btn" title="Remover">
@@ -837,17 +837,17 @@ textarea { resize: vertical; min-height: 80px; }
           <tbody>
             <tr ng-repeat="u in usuarios | filter:{nome: buscaUsuario}">
               <td>
-                <div style="display:flex;align-items:center;gap:10px">
-                  <div class="avatar" style="width:28px;height:28px;font-size:10px;background:linear-gradient(135deg,{{u.color1}},{{u.color2}})">{{u.iniciais}}</div>
-                  <span class="primary" style="font-weight:500;color:var(--text)">{{u.nome}}</span>
+                <div class="user-cell">
+                  <div class="avatar avatar--sm" ng-style="{'background': 'linear-gradient(135deg,' + u.color1 + ',' + u.color2 + ')'}">{{u.iniciais}}</div>
+                  <span class="primary user-display-name">{{u.nome}}</span>
                 </div>
               </td>
-              <td style="font-size:12px">{{u.email}}</td>
+              <td class="td--sm">{{u.email}}</td>
               <td><span class="badge" ng-class="u.nivel">{{u.nivelLabel}}</span></td>
               <td class="mono">{{u.ultimoLogin}}</td>
               <td><span class="badge" ng-class="u.ativo ? 'success' : 'inactive'"><span class="badge-dot"></span>{{u.ativo ? 'Ativo' : 'Inativo'}}</span></td>
               <td>
-                <div style="display:flex;gap:6px">
+                <div class="action-group">
                   <button class="icon-btn" title="Editar permissões">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
                   </button>
@@ -861,17 +861,17 @@ textarea { resize: vertical; min-height: 80px; }
         </table>
       </div>
 
-      <div style="margin-top:20px" class="table-card">
+      <div class="table-card mt-20">
         <div class="table-head"><span class="table-title">Permissões por Perfil</span></div>
-        <div style="padding:16px">
-          <table style="width:100%">
-            <thead><tr><th>Funcionalidade</th><th style="text-align:center">Admin</th><th style="text-align:center">Manager</th><th style="text-align:center">Viewer</th></tr></thead>
+        <div class="panel-body">
+          <table>
+            <thead><tr><th>Funcionalidade</th><th class="text-center">Admin</th><th class="text-center">Manager</th><th class="text-center">Viewer</th></tr></thead>
             <tbody>
               <tr ng-repeat="p in permissoes">
                 <td class="primary">{{p.func}}</td>
-                <td style="text-align:center"><span ng-if="p.admin" style="color:var(--green)">✓</span><span ng-if="!p.admin" style="color:var(--text3)">—</span></td>
-                <td style="text-align:center"><span ng-if="p.manager" style="color:var(--green)">✓</span><span ng-if="!p.manager" style="color:var(--text3)">—</span></td>
-                <td style="text-align:center"><span ng-if="p.viewer" style="color:var(--green)">✓</span><span ng-if="!p.viewer" style="color:var(--text3)">—</span></td>
+                <td class="text-center"><span ng-if="p.admin" class="perm-allowed">✓</span><span ng-if="!p.admin" class="perm-denied">—</span></td>
+                <td class="text-center"><span ng-if="p.manager" class="perm-allowed">✓</span><span ng-if="!p.manager" class="perm-denied">—</span></td>
+                <td class="text-center"><span ng-if="p.viewer" class="perm-allowed">✓</span><span ng-if="!p.viewer" class="perm-denied">—</span></td>
               </tr>
             </tbody>
           </table>
@@ -972,7 +972,7 @@ textarea { resize: vertical; min-height: 80px; }
           </div>
           <div class="form-group full">
             <label>Expressão Cron (gerada automaticamente)</label>
-            <input ng-model="formAg.cronExpr" style="font-family:var(--mono);font-size:12px;color:var(--accent)" readonly>
+            <input ng-model="formAg.cronExpr" class="input--cron" readonly>
           </div>
         </div>
       </div>
@@ -1011,7 +1011,7 @@ textarea { resize: vertical; min-height: 80px; }
     <!-- LOG MODAL -->
     <div ng-if="modalType==='log'">
       <div class="modal-header">
-        <span class="modal-title" style="font-family:var(--mono)">$ Log — {{logTarget.robot}}</span>
+        <span class="modal-title modal-title--mono">$ Log — {{logTarget.robot}}</span>
         <button class="modal-close" ng-click="fecharModal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
       </div>
       <div class="modal-body">
