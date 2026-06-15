@@ -115,3 +115,49 @@ Seguir o padrão visual existente: classes btn, btn-primary, btn-ghost, badge, t
 prompt - 8 
 blz, para criar um grupo fica na mesma tela do agendamento, quero que para criar um grupo seja um nova aba embaixo da aba Empresa, e nessa aba eu posso criar um grupo ou excluir e dentro de um grupo
  posso adicionar uma nova empresa ou remover uma empresa
+
+prompt 6 - Na seção Agendamentos, faça os seguintes ajustes:
+
+* Adicione uma nova coluna chamada Período.
+* Remova a coluna Status atual.
+* Renomeie a coluna Recorrência para Frequência.
+* Abaixo da descrição do agendamento (ex.: "Toda segunda às 09:00"), atualmente aparecem alguns números e caracteres (`****`). Remova essas informações e deixe apenas a descrição da frequência.
+* Adicione uma coluna Usuário, que representa a pessoa responsável por criar ou realizar o agendamento.
+* Na última coluna, adicione Ações/Status, utilizando ícones:
+   * ✅ Ícone verde quando o agendamento foi executado com sucesso;
+   * ❌ Ícone de erro quando a execução falhou;
+   * ✏️ Ícone de edição para permitir alterar o agendamento.
+Mantenha o restante da estrutura e do comportamento da tela inalterados, realizando apenas os ajustes visuais e de nomenclatura descritos acima.
+
+lembrando que é so front
+
+prompt 7 - Na tela de **Novo Agendamento**, realize os seguintes ajustes:
+
+* Adicione um campo para selecionar um **Grupo de Clientes**. Esse grupo pode ser identificado pelo nome do robô, já que cada robô possui seu conjunto específico de clientes que participarão da execução do agendamento.
+* Remova o campo **"Expressão Cron (gerada automaticamente)"**, pois essa informação não precisa ser exibida ao usuário.
+* Adicione os campos:
+
+  * **Período Inicial de Fechamento**
+  * **Período Final de Fechamento**
+
+Esses campos devem permitir ao usuário definir o intervalo de fechamento que será considerado na execução do robô.
+
+Mantenha o restante da tela e das funcionalidades atuais sem alterações, realizando apenas os ajustes descritos acima.
+
+prompt 8 - Na seção **Empresas**, inclua os seguintes campos para cadastro e visualização das informações da empresa:
+
+* **Nome**
+* **CNPJ**
+* **Inscrição Estadual**
+* **Regime Tributário**
+* **Optante**
+* **PIS/PASEP**
+* **Variação Monetária**
+* **Número da Conta**
+* **Senha**
+* **Frase Secreta**
+
+Organize os campos de forma clara e intuitiva, agrupando as informações cadastrais, tributárias e de acesso quando fizer sentido. Para os campos **Senha** e **Frase Secreta**, utilize componentes apropriados para dados sensíveis, permitindo ocultar ou visualizar o conteúdo conforme a necessidade do usuário.
+
+Mantenha o restante da estrutura e funcionalidades da seção **Empresas** sem alterações, adicionando apenas os campos listados acima.
+
