@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Orquestrador RPA 2.0</title>
+  <title>Orquestrador</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.8.3/angular.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.8.3/angular-animate.min.js"></script>
   <link
@@ -25,7 +25,6 @@
       </div>
       <div>
         <div class="logo-text">Orquestrador</div>
-        <div class="logo-sub">RPA 2.0</div>
       </div>
     </div>
 
@@ -58,6 +57,15 @@
             <polyline points="9 22 9 12 15 12 15 22" />
           </svg>
           Empresas
+        </div>
+        <div class="nav-item" ng-class="{active: page==='grupos'}" ng-click="page='grupos'">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="8" height="8" rx="1" />
+            <rect x="13" y="3" width="8" height="8" rx="1" />
+            <rect x="3" y="13" width="8" height="8" rx="1" />
+            <rect x="13" y="13" width="8" height="8" rx="1" />
+          </svg>
+          Grupos
         </div>
         <div class="nav-item" ng-class="{active: page==='robos'}" ng-click="page='robos'">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -416,6 +424,66 @@
         </div>
       </div>
 
+      <!-- ======================== GRUPOS ======================== -->
+      <div ng-if="page==='grupos'">
+        <div class="table-card">
+          <div class="table-head">
+            <span class="table-title">{{gruposEmpresa.length}} grupos configurados</span>
+            <button class="btn btn-primary btn--sm" ng-click="openModal('grupo')">+ Novo Grupo</button>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Grupo</th>
+                <th>Robô</th>
+                <th>Empresas</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr ng-repeat-start="g in gruposEmpresa">
+                <td class="primary">{{g.nome}}</td>
+                <td>{{getRoboNome(g.roboId)}}</td>
+                <td class="mono">{{g.empresaIds.length}} empresa(s)</td>
+                <td>
+                  <div class="action-group">
+                    <button class="btn btn-ghost btn--xs" ng-click="g._expanded = !g._expanded">
+                      Ver / Editar
+                    </button>
+                    <button class="icon-btn" ng-click="excluirGrupo(g)" title="Excluir grupo">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="3 6 5 6 21 6" />
+                        <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" />
+                      </svg>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              <tr ng-repeat-end ng-if="g._expanded">
+                <td colspan="4" style="background:var(--bg2);padding:14px 16px">
+                  <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px" ng-if="g.empresaIds.length">
+                    <span ng-repeat="eId in g.empresaIds" class="badge success" style="display:flex;align-items:center;gap:4px">
+                      {{getEmpresaNome(eId)}}
+                      <button ng-click="removerEmpresaDoGrupo(g, eId)"
+                        style="background:none;border:none;cursor:pointer;line-height:1;opacity:0.8;font-size:14px;padding:0">×</button>
+                    </span>
+                  </div>
+                  <span ng-if="!g.empresaIds.length" style="color:var(--text2);font-size:13px">Nenhuma empresa neste grupo.</span>
+                  <div style="display:flex;gap:8px;align-items:center;margin-top:4px">
+                    <select ng-model="g._novaEmpresa" style="flex:1">
+                      <option value="">Adicionar empresa...</option>
+                      <option ng-repeat="e in empresas" value="{{e.id}}"
+                        ng-if="g.empresaIds.indexOf(e.id) === -1">{{e.nome}}</option>
+                    </select>
+                    <button class="btn btn-primary btn--sm" ng-click="adicionarEmpresaAoGrupo(g)">Adicionar</button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
       <!-- ======================== ROBÔS ======================== -->
       <div ng-if="page==='robos'">
         <div class="alert alert-info alert--spaced">
@@ -603,8 +671,14 @@
             </thead>
             <tbody>
               <tr ng-repeat="a in agendamentos">
-                <td class="primary">{{a.empresa}}</td>
-                <td>{{a.robo}}</td>
+                <td class="primary">
+                  <span ng-if="a.batchId">{{a.grupoNome}}</span>
+                  <span ng-if="!a.batchId">{{a.empresa}}</span>
+                </td>
+                <td>
+                  {{a.robo}}
+                  <span ng-if="a.batchId" class="badge" style="margin-left:4px">Lote</span>
+                </td>
                 <td>
                   <span class="schedule-desc">{{a.desc}}</span>
                   <div class="schedule-cron-expr">{{a.cron}}</div>
@@ -806,13 +880,32 @@
             </svg></button>
         </div>
         <div class="modal-body">
+          <div class="form-group full" style="margin-bottom:12px">
+            <label>Modo de Execução</label>
+            <div style="display:flex;gap:8px;margin-top:6px">
+              <button type="button"
+                ng-class="formAg.modoExecucao==='individual' ? 'btn btn-primary btn--sm' : 'btn btn-ghost btn--sm'"
+                ng-click="formAg.modoExecucao='individual'">Empresa Individual</button>
+              <button type="button"
+                ng-class="formAg.modoExecucao==='grupo' ? 'btn btn-primary btn--sm' : 'btn btn-ghost btn--sm'"
+                ng-click="formAg.modoExecucao='grupo'">Grupo de Empresas</button>
+            </div>
+          </div>
           <div class="form-grid">
-            <div class="form-group">
+            <div class="form-group" ng-if="formAg.modoExecucao==='individual'">
               <label>Empresa *</label>
               <select ng-model="formAg.empresa">
                 <option value="">Selecionar...</option>
                 <option ng-repeat="e in empresas" value="{{e.id}}">{{e.nome}}</option>
               </select>
+            </div>
+            <div class="form-group" ng-if="formAg.modoExecucao==='grupo'">
+              <label>Grupo de Empresas *</label>
+              <select ng-model="formAg.grupoId">
+                <option value="">Selecionar grupo...</option>
+                <option ng-repeat="g in gruposEmpresa | filter:{roboId: formAg.robo}" value="{{g.id}}">{{g.nome}}</option>
+              </select>
+              <a ng-click="modalOpen=false;page='grupos'" style="display:inline-block;margin-top:8px;font-size:12px;cursor:pointer;color:var(--accent)">Gerenciar grupos →</a>
             </div>
             <div class="form-group">
               <label>Robô *</label>
@@ -849,6 +942,46 @@
         <div class="modal-footer">
           <button class="btn btn-ghost" ng-click="fecharModal()">Cancelar</button>
           <button class="btn btn-primary" ng-click="salvarAgendamento()">Criar Agendamento</button>
+        </div>
+      </div>
+
+      <!-- GRUPO MODAL -->
+      <div ng-if="modalType==='grupo'">
+        <div class="modal-header">
+          <span class="modal-title">Novo Grupo de Empresas</span>
+          <button class="modal-close" ng-click="fecharModal()"><svg viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg></button>
+        </div>
+        <div class="modal-body">
+          <div class="form-grid">
+            <div class="form-group full">
+              <label>Nome do Grupo *</label>
+              <input ng-model="formGrupo.nome" placeholder="Ex: Grupo Fiscal Sul">
+            </div>
+            <div class="form-group full">
+              <label>Robô</label>
+              <select ng-model="formGrupo.roboId">
+                <option value="">Selecionar...</option>
+                <option ng-repeat="r in robos" value="{{r.id}}">{{r.nome}}</option>
+              </select>
+            </div>
+            <div class="form-group full">
+              <label>Empresas do Grupo</label>
+              <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px">
+                <div ng-repeat="e in empresas"
+                  class="cron-day"
+                  ng-class="{selected: formGrupo.empresaIds.indexOf(e.id) > -1}"
+                  ng-click="toggleEmpresaGrupo(e.id)">{{e.nome}}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-ghost" ng-click="fecharModal()">Cancelar</button>
+          <button class="btn btn-primary" ng-click="salvarGrupo()">Salvar Grupo</button>
         </div>
       </div>
 

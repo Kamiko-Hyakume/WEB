@@ -116,6 +116,11 @@ angular.module('OrchestratorApp', [])
       { empresa: 'Epsilon Ltda', robo: 'Robô Logística', desc: 'A cada 6 horas', cron: '0 */6 * * *', proxima: '09/06 18:00', ativo: true },
     ];
 
+    $scope.gruposEmpresa = [
+      { id: 'g1', roboId: 'r1', nome: 'Grupo Fiscal SP', empresaIds: ['e1', 'e2', 'e3'] },
+      { id: 'g2', roboId: 'r2', nome: 'Grupo Comercial Sul', empresaIds: ['e2', 'e4'] }
+    ];
+
     $scope.usuarios = [
       { nome: 'Gabriel Woelfer', email: 'dev.grsilva@gmail.com', nivel: 'admin', nivelLabel: 'Admin', ultimoLogin: '08/06 14:30', ativo: true, iniciais: 'GW', color1: '#4f8ef7', color2: '#a78bfa' },
       { nome: 'Gabriela Nascimento', email: 'gabriela@empresa.com', nivel: 'manager', nivelLabel: 'Manager', ultimoLogin: '08/06 11:15', ativo: true, iniciais: 'GN', color1: '#22d3a0', color2: '#22d3ee' },
@@ -174,7 +179,8 @@ angular.module('OrchestratorApp', [])
       $scope.formEmpresa = {};
       $scope.formRobo = {};
       $scope.formUser = { nivel: 'viewer' };
-      $scope.formAg = { dias: {}, hora: '08:00', repeticao: 'weekly', cronExpr: '0 8 * * 1-5' };
+      $scope.formAg = { dias: {}, hora: '08:00', repeticao: 'weekly', cronExpr: '0 8 * * 1-5', modoExecucao: 'individual' };
+      $scope.formGrupo = { empresaIds: [] };
     };
 
     $scope.fecharModal = function (ev) {
@@ -235,25 +241,92 @@ angular.module('OrchestratorApp', [])
       $scope.modalOpen = false;
     };
 
-    $scope.salvarAgendamento = function () {
-      $scope.agendamentos.push({
-        empresa: $scope.getEmpresaNome($scope.formAg.empresa) || '—',
-        robo: $scope.getRoboNome($scope.formAg.robo) || '—',
-        desc: 'Personalizado ' + $scope.formAg.hora,
-        cron: $scope.formAg.cronExpr,
-        proxima: '09/06 ' + $scope.formAg.hora,
-        ativo: true
+    $scope.getGrupoSelecionado = function () {
+      return $scope.gruposEmpresa.find(function (g) { return g.id === $scope.formAg.grupoId; }) || { empresaIds: [] };
+    };
+
+    $scope.toggleEmpresaGrupo = function (id) {
+      var idx = $scope.formGrupo.empresaIds.indexOf(id);
+      if (idx > -1) $scope.formGrupo.empresaIds.splice(idx, 1);
+      else $scope.formGrupo.empresaIds.push(id);
+    };
+
+    $scope.salvarGrupo = function () {
+      if (!$scope.formGrupo.nome || !$scope.formGrupo.roboId) return;
+      $scope.gruposEmpresa.push({
+        id: 'g' + Date.now(),
+        roboId: $scope.formGrupo.roboId,
+        nome: $scope.formGrupo.nome,
+        empresaIds: angular.copy($scope.formGrupo.empresaIds)
       });
       $scope.modalOpen = false;
     };
 
+    $scope.excluirGrupo = function (g) {
+      var idx = $scope.gruposEmpresa.indexOf(g);
+      if (idx > -1) $scope.gruposEmpresa.splice(idx, 1);
+    };
+
+    $scope.removerEmpresaDoGrupo = function (g, eId) {
+      var idx = g.empresaIds.indexOf(eId);
+      if (idx > -1) g.empresaIds.splice(idx, 1);
+    };
+
+    $scope.adicionarEmpresaAoGrupo = function (g) {
+      if (!g._novaEmpresa || g.empresaIds.indexOf(g._novaEmpresa) > -1) return;
+      g.empresaIds.push(g._novaEmpresa);
+      g._novaEmpresa = '';
+    };
+
+    $scope.salvarAgendamento = function () {
+      if ($scope.formAg.modoExecucao === 'grupo') {
+        var grupo = $scope.getGrupoSelecionado();
+        var batchId = 'batch-' + Date.now();
+        grupo.empresaIds.forEach(function (eId) {
+          $scope.agendamentos.push({
+            empresa: $scope.getEmpresaNome(eId),
+            robo: $scope.getRoboNome($scope.formAg.robo),
+            desc: '[Lote] ' + grupo.nome + ' — ' + $scope.formAg.hora,
+            cron: $scope.formAg.cronExpr,
+            proxima: '09/06 ' + $scope.formAg.hora,
+            ativo: true,
+            batchId: batchId,
+            grupoNome: grupo.nome
+          });
+        });
+      } else {
+        $scope.agendamentos.push({
+          empresa: $scope.getEmpresaNome($scope.formAg.empresa) || '—',
+          robo: $scope.getRoboNome($scope.formAg.robo) || '—',
+          desc: 'Personalizado ' + $scope.formAg.hora,
+          cron: $scope.formAg.cronExpr,
+          proxima: '09/06 ' + $scope.formAg.hora,
+          ativo: true
+        });
+      }
+      $scope.modalOpen = false;
+    };
+
     $scope.executarAgora = function (a) {
-      $scope.execucoes.unshift({
-        id: String(9000 + Math.floor(Math.random() * 100)),
-        robo: a.robo, empresa: a.empresa,
-        inicio: new Date().toTimeString().slice(0, 8),
-        duracao: '00:00:00', status: 'running', statusLabel: 'Processando'
-      });
+      if (a.batchId) {
+        var lote = $scope.agendamentos.filter(function (x) { return x.batchId === a.batchId; });
+        lote.forEach(function (ag) {
+          $scope.execucoes.unshift({
+            id: String(9000 + Math.floor(Math.random() * 100)),
+            robo: ag.robo, empresa: ag.empresa,
+            inicio: new Date().toTimeString().slice(0, 8),
+            duracao: '00:00:00', status: 'running', statusLabel: 'Processando',
+            batchId: a.batchId
+          });
+        });
+      } else {
+        $scope.execucoes.unshift({
+          id: String(9000 + Math.floor(Math.random() * 100)),
+          robo: a.robo, empresa: a.empresa,
+          inicio: new Date().toTimeString().slice(0, 8),
+          duracao: '00:00:00', status: 'running', statusLabel: 'Processando'
+        });
+      }
       $scope.page = 'execucoes';
     };
 
