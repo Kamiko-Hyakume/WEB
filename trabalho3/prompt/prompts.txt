@@ -15,107 +15,6 @@ prompt 4 - Faça a tela seguir os padrões do Material Design 3(M3) fazendo o te
 Faça com que o botão "Lembrar-me" realmente salve as informações inseridas. No index altere apenas oque eu falar para não mudar nada do codigo.
 Crie um botão de log out com responsividade com base no M3 que retorne o usuario para a tela de login.
 
-prompt 6 - me ajude em um prompt, tenho esse projeto e atualmente quando vou rodar um robo em uma empresa, preciso escolher por empresa individualmente, por 
-exemplo tenho 10 empresas que quero que o robo x rode, e atualmente vou na no robo e seleciona a primeira 1, depois vou no robo x de novo e seleciono a 2 empresa,
-e o que eu queria ao escolher um robo para roda eu possa escolher mais de uma empresa, em vez de eu selecionar uma por vez, eu possa escolher quantas eu quiser,
-onde eu posso escolher grupos por robo, e cada robo tem aquelas em presa, no caso eu crio um grupo para o robo x e nesse grupo tem as empresa que eu quero que 
-aquele robo rode
-- Aplicação AngularJS 1.x (app.js + index.html) — Orquestrador RPA 2.0. O controller principal é MainCtrl e já existem os arrays $scope.robos, $scope.empresas e $scope.agendamentos.
-Feature a implementar: Grupos de Empresas por Robô
-
-1. Nova estrutura de dados — $scope.gruposEmpresa
-Adicionar no controller um array inicial:
-js$scope.gruposEmpresa = [
-  { id: 'g1', roboId: 'r1', nome: 'Grupo Fiscal SP', empresaIds: ['e1', 'e2', 'e3'] },
-  { id: 'g2', roboId: 'r2', nome: 'Grupo Comercial Sul', empresaIds: ['e2', 'e4'] }
-];
-Cada grupo pertence a um robô (roboId) e contém um array de IDs de empresas (empresaIds).
-
-2. Modal de agendamento — reformular o campo "Empresa"
-No modal modalType === 'agendamento' do index.html, substituir o <select> simples de empresa por um fluxo em duas etapas dentro do mesmo modal:
-Etapa A — escolher como executar:
-
-Dois botões de escolha (radio-style) no início do modal:
-
-"Empresa individual" → exibe o <select> original de empresa (comportamento atual)
-"Grupo de empresas" → exibe o seletor de grupos (novo)
-
-Controlar via formAg.modoExecucao ('individual' | 'grupo'), inicializando com 'individual'.
-Etapa B — seletor de grupo:
-
-Quando formAg.modoExecucao === 'grupo':
-
-Um <select> que filtra gruposEmpresa pelo formAg.robo selecionado: ng-repeat="g in gruposEmpresa | filter:{roboId: formAg.robo}"
-Exibir abaixo do select as empresas do grupo selecionado como chips/badges: ng-repeat="eId in getGrupoSelecionado().empresaIds"  usando getEmpresaNome(eId) para mostrar o nome
-Um link/botão pequeno "+ Criar novo grupo para este robô" que abre o modal de criação de grupo (ver item 3)
-
-
-3. Novo modal modalType === 'grupo'
-Campos:
-
-formGrupo.nome — nome do grupo (texto)
-formGrupo.roboId — pré-preenchido com formAg.robo se vier do fluxo de agendamento
-formGrupo.empresaIds — array de IDs selecionados
-
-Para o campo de empresas, renderizar a lista completa de $scope.empresas como checkboxes clicáveis (não <select multiple>), usando ng-repeat="e in empresas" com ng-click="toggleEmpresaGrupo(e.id)" e estado visual ng-class="{selected: formGrupo.empresaIds.indexOf(e.id) > -1}".
-Função salvarGrupo():
-js$scope.salvarGrupo = function() {
-  if (!$scope.formGrupo.nome || !$scope.formGrupo.roboId) return;
-  $scope.gruposEmpresa.push({
-    id: 'g' + Date.now(),
-    roboId: $scope.formGrupo.roboId,
-    nome: $scope.formGrupo.nome,
-    empresaIds: angular.copy($scope.formGrupo.empresaIds)
-  });
-  // Retornar ao modal de agendamento, pré-selecionando o grupo recém-criado
-  $scope.formAg.grupoId = $scope.gruposEmpresa[$scope.gruposEmpresa.length - 1].id;
-  $scope.modalType = 'agendamento';
-};
-
-4. Função helper — getGrupoSelecionado()
-js$scope.getGrupoSelecionado = function() {
-  return $scope.gruposEmpresa.find(function(g) { return g.id === $scope.formAg.grupoId; }) || { empresaIds: [] };
-};
-
-5. Adaptar salvarAgendamento() para batch
-Quando formAg.modoExecucao === 'grupo', iterar sobre as empresas do grupo e criar uma entrada de agendamento por empresa, todas com o mesmo batchId para rastreamento:
-js$scope.salvarAgendamento = function() {
-  if ($scope.formAg.modoExecucao === 'grupo') {
-    var grupo = $scope.getGrupoSelecionado();
-    var batchId = 'batch-' + Date.now();
-    grupo.empresaIds.forEach(function(eId) {
-      $scope.agendamentos.push({
-        empresa: $scope.getEmpresaNome(eId),
-        robo: $scope.getRoboNome($scope.formAg.robo),
-        desc: '[Lote] ' + grupo.nome + ' — ' + $scope.formAg.hora,
-        cron: $scope.formAg.cronExpr,
-        proxima: '09/06 ' + $scope.formAg.hora,
-        ativo: true,
-        batchId: batchId,
-        grupoNome: grupo.nome
-      });
-    });
-  } else {
-    // lógica individual existente, sem alteração
-  }
-  $scope.modalOpen = false;
-};
-Na tabela de agendamentos (page === 'agendamentos'), quando a.batchId existir, exibir uma badge "Lote" ao lado do nome do robô e mostrar a.grupoNome na coluna Empresa em vez do nome individual.
-
-6. Adaptar executarAgora() para batch
-Quando o agendamento tiver batchId, buscar todos os agendamentos do mesmo batchId e criar uma execução em $scope.execucoes para cada empresa, todas com status: 'running' e um campo batchId compartilhado.
-
-Restrições:
-
-Não usar <select multiple> — usar checkboxes customizados com ng-click
-Não criar nova rota/página — tudo dentro do sistema de modais existente com modalType
-Manter o fluxo individual funcionando exatamente como está
-Seguir o padrão visual existente: classes btn, btn-primary, btn-ghost, badge, toggle, form-group, form-grid
-
-prompt - 8 
-blz, para criar um grupo fica na mesma tela do agendamento, quero que para criar um grupo seja um nova aba embaixo da aba Empresa, e nessa aba eu posso criar um grupo ou excluir e dentro de um grupo
- posso adicionar uma nova empresa ou remover uma empresa
-
 prompt 6 - Na seção Agendamentos, faça os seguintes ajustes:
 
 * Adicione uma nova coluna chamada Período.
@@ -161,3 +60,6 @@ Organize os campos de forma clara e intuitiva, agrupando as informações cadast
 
 Mantenha o restante da estrutura e funcionalidades da seção **Empresas** sem alterações, adicionando apenas os campos listados acima.
 
+prompt 9 -  pode remover a tela de parametros
+            catalago de robôs muda so para robôs
+            deixe apenas o botão de editar na tela de controle de acesso e faça com que o mesmo funcione
