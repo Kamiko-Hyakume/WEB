@@ -3,20 +3,19 @@ angular.module('OrchestratorApp', [])
     $scope.page = 'dashboard';
     $scope.modalOpen = false;
 
-    // Lê dados salvos do login (lembrar-me)
     var savedSession = JSON.parse(localStorage.getItem('rpa_session') || 'null');
     if (savedSession) {
       $scope.sessionUser = savedSession.email || savedSession.apikey || 'Admin Woelfer';
     }
 
     $scope.logout = function () {
-      // Se não marcou lembrar-me, limpa os dados salvos
       var lembrar = localStorage.getItem('rpa_lembrar');
       if (lembrar !== 'true') {
         localStorage.removeItem('rpa_session');
       }
       window.location.href = 'login.html';
     };
+
     $scope.terminalOpen = false;
     $scope.buscaEmpresa = '';
     $scope.buscaUsuario = '';
@@ -27,11 +26,14 @@ angular.module('OrchestratorApp', [])
     $scope.filtroStatus = '';
     $scope.filtroEmpresa = '';
     $scope.filtroRobo = '';
-    $scope.formAg = { dias: {}, cronExpr: '0 8 * * 1-5', hora: '08:00', repeticao: 'weekly' };
+    $scope.formAg = { dias: {}, cronExpr: '0 8 * * 1-5', hora: '08:00', repeticao: 'weekly', grupoClientes: '', periodoInicial: '', periodoFinal: '' };
+    $scope.grupoClientesDisponiveis = [];
     $scope.formEmpresa = {};
     $scope.formRobo = {};
     $scope.formUser = { nivel: 'viewer' };
     $scope.logTarget = {};
+    $scope.showSenha = false;
+    $scope.showFrase = false;
 
     $scope.diasSemana = [
       { label: 'Seg', val: '1' }, { label: 'Ter', val: '2' }, { label: 'Qua', val: '3' },
@@ -61,11 +63,41 @@ angular.module('OrchestratorApp', [])
     ];
 
     $scope.empresas = [
-      { id: 'e1', nome: 'Acme Corporation', cnpj: '12.345.678/0001-90', ativo: true, robosCount: 4, cadastro: '2025-01-15' },
-      { id: 'e2', nome: 'Beta Tecnologia Ltda', cnpj: '98.765.432/0001-11', ativo: true, robosCount: 3, cadastro: '2025-03-22' },
-      { id: 'e3', nome: 'Gamma Indústria S/A', cnpj: '45.678.901/0001-55', ativo: true, robosCount: 5, cadastro: '2025-02-08' },
-      { id: 'e4', nome: 'Delta Serviços ME', cnpj: '11.222.333/0001-44', ativo: false, robosCount: 1, cadastro: '2024-11-30' },
-      { id: 'e5', nome: 'Epsilon Comércio Ltda', cnpj: '77.888.999/0001-22', ativo: true, robosCount: 2, cadastro: '2026-01-05' },
+      {
+        id: 'e1', nome: 'Acme Corporation', cnpj: '12.345.678/0001-90',
+        ie: '123.456.789.000', regimeTributario: 'Lucro Presumido', optante: 'Não',
+        pisPasep: '123.45678.90-1', variacaoMonetaria: 'BRL — Real Brasileiro',
+        numeroConta: '00012-3', senha: '', fraseSecreta: '',
+        email: '', ativo: true, robosCount: 4, cadastro: '2025-01-15'
+      },
+      {
+        id: 'e2', nome: 'Beta Tecnologia Ltda', cnpj: '98.765.432/0001-11',
+        ie: '987.654.321.000', regimeTributario: 'Simples Nacional', optante: 'Sim',
+        pisPasep: '987.65432.10-2', variacaoMonetaria: 'BRL — Real Brasileiro',
+        numeroConta: '00078-9', senha: '', fraseSecreta: '',
+        email: '', ativo: true, robosCount: 3, cadastro: '2025-03-22'
+      },
+      {
+        id: 'e3', nome: 'Gamma Indústria S/A', cnpj: '45.678.901/0001-55',
+        ie: '456.789.012.000', regimeTributario: 'Lucro Real', optante: 'Não',
+        pisPasep: '', variacaoMonetaria: 'USD — Dólar Americano',
+        numeroConta: '00056-7', senha: '', fraseSecreta: '',
+        email: '', ativo: true, robosCount: 5, cadastro: '2025-02-08'
+      },
+      {
+        id: 'e4', nome: 'Delta Serviços ME', cnpj: '11.222.333/0001-44',
+        ie: '', regimeTributario: 'MEI', optante: 'Sim',
+        pisPasep: '', variacaoMonetaria: 'BRL — Real Brasileiro',
+        numeroConta: '00034-1', senha: '', fraseSecreta: '',
+        email: '', ativo: false, robosCount: 1, cadastro: '2024-11-30'
+      },
+      {
+        id: 'e5', nome: 'Epsilon Comércio Ltda', cnpj: '77.888.999/0001-22',
+        ie: '778.889.990.000', regimeTributario: 'Simples Nacional', optante: 'Sim',
+        pisPasep: '', variacaoMonetaria: 'BRL — Real Brasileiro',
+        numeroConta: '00091-4', senha: '', fraseSecreta: '',
+        email: '', ativo: true, robosCount: 2, cadastro: '2026-01-05'
+      },
     ];
 
     $scope.robos = [
@@ -109,11 +141,51 @@ angular.module('OrchestratorApp', [])
     $scope.terminalLogs = [];
 
     $scope.agendamentos = [
-      { empresa: 'Acme Corp', robo: 'Robô Fiscal — Emitir NF', desc: 'Segunda a Sexta às 08:00', cron: '0 8 * * 1-5', proxima: '09/06 08:00', ativo: true },
-      { empresa: 'Beta Ltda', robo: 'Robô Comercial — Leads', desc: 'Todo dia às 06:00', cron: '0 6 * * *', proxima: '09/06 06:00', ativo: true },
-      { empresa: 'Gamma S/A', robo: 'Robô Financeiro', desc: 'Toda segunda às 09:00', cron: '0 9 * * 1', proxima: '15/06 09:00', ativo: false },
-      { empresa: 'Acme Corp', robo: 'Robô RH — Folha', desc: '1º dia do mês às 07:00', cron: '0 7 1 * *', proxima: '01/07 07:00', ativo: true },
-      { empresa: 'Epsilon Ltda', robo: 'Robô Logística', desc: 'A cada 6 horas', cron: '0 */6 * * *', proxima: '09/06 18:00', ativo: true },
+      {
+        empresa: 'Acme Corp', robo: 'Robô Fiscal — Emitir NF',
+        desc: 'Segunda a Sexta às 08:00',
+        periodo: '01/06/2026 – 30/06/2026',
+        proxima: '09/06 08:00',
+        usuario: 'Gabriel Woelfer',
+        lastStatus: 'success',
+        ativo: true
+      },
+      {
+        empresa: 'Beta Ltda', robo: 'Robô Comercial — Leads',
+        desc: 'Todo dia às 06:00',
+        periodo: '01/01/2026 – Indeterminado',
+        proxima: '09/06 06:00',
+        usuario: 'Gabriela Nascimento',
+        lastStatus: 'success',
+        ativo: true
+      },
+      {
+        empresa: 'Gamma S/A', robo: 'Robô Financeiro',
+        desc: 'Toda segunda às 09:00',
+        periodo: '01/05/2026 – 31/07/2026',
+        proxima: '15/06 09:00',
+        usuario: 'Carlos Oliveira',
+        lastStatus: 'error',
+        ativo: false
+      },
+      {
+        empresa: 'Acme Corp', robo: 'Robô RH — Folha',
+        desc: '1º dia do mês às 07:00',
+        periodo: '01/01/2026 – 31/12/2026',
+        proxima: '01/07 07:00',
+        usuario: 'Gabriel Woelfer',
+        lastStatus: 'success',
+        ativo: true
+      },
+      {
+        empresa: 'Epsilon Ltda', robo: 'Robô Logística',
+        desc: 'A cada 6 horas',
+        periodo: '10/06/2026 – 10/07/2026',
+        proxima: '09/06 18:00',
+        usuario: 'Kamilly Birkner',
+        lastStatus: null,
+        ativo: true
+      },
     ];
 
     $scope.usuarios = [
@@ -171,20 +243,44 @@ angular.module('OrchestratorApp', [])
       $scope.modalType = type;
       $scope.modalOpen = true;
       $scope.editando = false;
+      $scope.showSenha = false;
+      $scope.showFrase = false;
       $scope.formEmpresa = {};
       $scope.formRobo = {};
       $scope.formUser = { nivel: 'viewer' };
-      $scope.formAg = { dias: {}, hora: '08:00', repeticao: 'weekly', cronExpr: '0 8 * * 1-5' };
+      $scope.formAg = { dias: {}, hora: '08:00', repeticao: 'weekly', cronExpr: '0 8 * * 1-5', grupoClientes: '', periodoInicial: '', periodoFinal: '' };
+      $scope.grupoClientesDisponiveis = [];
     };
 
     $scope.fecharModal = function (ev) {
-      if (!ev || ev.target === ev.currentTarget) $scope.modalOpen = false;
+      if (!ev || ev.target === ev.currentTarget) {
+        $scope.modalOpen = false;
+        $scope.showSenha = false;
+        $scope.showFrase = false;
+      }
     };
 
     $scope.editarEmpresa = function (e) {
       $scope.formEmpresa = angular.copy(e);
       $scope.editando = true;
       $scope.modalType = 'empresa';
+      $scope.modalOpen = true;
+      $scope.showSenha = false;
+      $scope.showFrase = false;
+    };
+
+    $scope.editarAgendamento = function (a) {
+      $scope.formAg = {
+        empresa: '',
+        robo: '',
+        hora: '08:00',
+        repeticao: 'weekly',
+        dias: {},
+        cronExpr: '0 8 * * 1-5'
+      };
+      $scope.editando = true;
+      $scope.agendamentoEditando = a;
+      $scope.modalType = 'agendamento';
       $scope.modalOpen = true;
     };
 
@@ -198,12 +294,23 @@ angular.module('OrchestratorApp', [])
           id: 'e' + Date.now(),
           nome: $scope.formEmpresa.nome,
           cnpj: $scope.formEmpresa.cnpj || '—',
+          ie: $scope.formEmpresa.ie || '',
+          regimeTributario: $scope.formEmpresa.regimeTributario || '',
+          optante: $scope.formEmpresa.optante || '',
+          pisPasep: $scope.formEmpresa.pisPasep || '',
+          variacaoMonetaria: $scope.formEmpresa.variacaoMonetaria || '',
+          numeroConta: $scope.formEmpresa.numeroConta || '',
+          senha: $scope.formEmpresa.senha || '',
+          fraseSecreta: $scope.formEmpresa.fraseSecreta || '',
+          email: $scope.formEmpresa.email || '',
           ativo: true,
           robosCount: 0,
           cadastro: new Date().toISOString().split('T')[0]
         });
       }
       $scope.modalOpen = false;
+      $scope.showSenha = false;
+      $scope.showFrase = false;
     };
 
     $scope.salvarRobo = function () {
@@ -236,12 +343,20 @@ angular.module('OrchestratorApp', [])
     };
 
     $scope.salvarAgendamento = function () {
+      var grupoLabel = '';
+      if ($scope.formAg.grupoClientes && $scope.grupoClientesDisponiveis.length) {
+        var g = $scope.grupoClientesDisponiveis.find(function (x) { return x.id === $scope.formAg.grupoClientes; });
+        grupoLabel = g ? g.label : '';
+      }
       $scope.agendamentos.push({
         empresa: $scope.getEmpresaNome($scope.formAg.empresa) || '—',
         robo: $scope.getRoboNome($scope.formAg.robo) || '—',
         desc: 'Personalizado ' + $scope.formAg.hora,
-        cron: $scope.formAg.cronExpr,
+        periodo: ($scope.formAg.periodoInicial || '—') + ' – ' + ($scope.formAg.periodoFinal || '—'),
         proxima: '09/06 ' + $scope.formAg.hora,
+        usuario: 'Admin Woelfer',
+        grupoClientes: grupoLabel,
+        lastStatus: null,
         ativo: true
       });
       $scope.modalOpen = false;
@@ -278,6 +393,39 @@ angular.module('OrchestratorApp', [])
       r.schema.splice(idx, 1);
     };
 
+    var gruposPorRobo = {
+      'r1': [
+        { id: 'g1', label: 'Grupo Fiscal SP — 12 empresas' },
+        { id: 'g2', label: 'Grupo Fiscal RJ — 8 empresas' },
+        { id: 'g3', label: 'Grupo Fiscal SUL — 15 empresas' },
+      ],
+      'r2': [
+        { id: 'g4', label: 'Grupo Comercial Nacional — 30 empresas' },
+        { id: 'g5', label: 'Grupo Comercial Regional — 11 empresas' },
+      ],
+      'r3': [
+        { id: 'g6', label: 'Grupo Financeiro Matriz — 5 empresas' },
+        { id: 'g7', label: 'Grupo Financeiro Filiais — 9 empresas' },
+      ],
+      'r4': [
+        { id: 'g8', label: 'Grupo RH Operacional — 47 funcionários' },
+        { id: 'g9', label: 'Grupo RH Diretoria — 12 funcionários' },
+      ],
+      'r5': [
+        { id: 'g10', label: 'Grupo Logística CD São Paulo — 20 empresas' },
+        { id: 'g11', label: 'Grupo Logística CD Sul — 14 empresas' },
+      ],
+      'r6': [
+        { id: 'g12', label: 'Grupo SPED Contábil — 18 empresas' },
+        { id: 'g13', label: 'Grupo SPED Fiscal — 22 empresas' },
+      ],
+    };
+
+    $scope.loadGrupoClientes = function () {
+      $scope.grupoClientesDisponiveis = gruposPorRobo[$scope.formAg.robo] || [];
+      $scope.formAg.grupoClientes = '';
+    };
+
     $scope.loadParamSchema = function () {
       if (!$scope.paramRobo) return;
       var r = $scope.robos.find(function (x) { return x.id === $scope.paramRobo; });
@@ -302,7 +450,12 @@ angular.module('OrchestratorApp', [])
       $scope.formAg.cronExpr = h[1] + ' ' + h[0] + ' * * ' + (dias || '*');
     };
 
-    // Live feed update
+    // Extrai apenas a sigla da moeda para exibição na tabela
+    $scope.moedaSigla = function (str) {
+      if (!str) return '—';
+      return str.split(' ')[0];
+    };
+
     var msgs = [
       ['Robô Fiscal', 'NF #00043521 emitida — OK'],
       ['Robô Comercial', 'Lead qualificado — score 87/100'],
