@@ -166,7 +166,7 @@
           </svg>
           Convidar Usuário
         </button>
-        <button class="btn btn-primary" ng-if="page==='dashboard'" ng-click="page='execucoes'">
+        <button class="btn btn-primary" ng-if="page==='dashboard'" ng-click="irParaExecucoes()" style="cursor:pointer">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
           </svg>
@@ -208,8 +208,8 @@
             <div class="table-head">
               <span class="table-title">Volumetria por Hora</span>
               <div class="tabs tabs--flush">
-                <div class="tab active">Hoje</div>
-                <div class="tab">7 dias</div>
+                <div class="tab" ng-class="{active: tabVolumetria==='hoje'}" ng-click="setTabVolumetria('hoje')" style="cursor:pointer">Hoje</div>
+                <div class="tab" ng-class="{active: tabVolumetria==='7dias'}" ng-click="setTabVolumetria('7dias')" style="cursor:pointer">7 dias</div>
               </div>
             </div>
             <div class="panel-body">
@@ -218,7 +218,8 @@
                 </div>
               </div>
               <div class="chart-x-labels">
-                <span>00h</span><span>04h</span><span>08h</span><span>12h</span><span>16h</span><span>20h</span><span>23h</span>
+                <span ng-if="tabVolumetria==='hoje'">00h</span><span ng-if="tabVolumetria==='hoje'">04h</span><span ng-if="tabVolumetria==='hoje'">08h</span><span ng-if="tabVolumetria==='hoje'">12h</span><span ng-if="tabVolumetria==='hoje'">16h</span><span ng-if="tabVolumetria==='hoje'">20h</span><span ng-if="tabVolumetria==='hoje'">23h</span>
+                <span ng-if="tabVolumetria==='7dias'">Seg</span><span ng-if="tabVolumetria==='7dias'">Ter</span><span ng-if="tabVolumetria==='7dias'">Qua</span><span ng-if="tabVolumetria==='7dias'">Qui</span><span ng-if="tabVolumetria==='7dias'">Sex</span><span ng-if="tabVolumetria==='7dias'">Sáb</span><span ng-if="tabVolumetria==='7dias'">Dom</span>
               </div>
             </div>
           </div>
@@ -346,7 +347,7 @@
                   </svg>
                   Baixar .txt
                 </button>
-                <button class="icon-btn" ng-click="terminalOpen=false">
+                <button class="icon-btn" ng-click="fecharTerminal()" title="Fechar log">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <line x1="18" y1="6" x2="6" y2="18" />
                     <line x1="6" y1="6" x2="18" y2="18" />
@@ -411,17 +412,10 @@
                 <td class="mono">{{e.cadastro}}</td>
                 <td>
                   <div class="action-group">
-                    <button class="icon-btn" title="Editar" ng-click="editarEmpresa(e)">
+                    <button class="icon-btn" title="Editar empresa" ng-click="editarEmpresa(e)">
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
                         <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
-                      </svg>
-                    </button>
-                    <button class="icon-btn" title="Configurar parâmetros"
-                      ng-click="page='parametros';filtroEmpresaParam=e.id">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="12" cy="12" r="3" />
-                        <path d="M19.07 4.93A10 10 0 116.93 19.07" />
                       </svg>
                     </button>
                   </div>
