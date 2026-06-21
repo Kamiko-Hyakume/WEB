@@ -46,6 +46,16 @@ angular.module('OrchestratorApp', [])
       { h: 60, v: 31 }, { h: 75, v: 38 }, { h: 80, v: 41 }, { h: 72, v: 37 }, { h: 65, v: 33 }, { h: 55, v: 28 },
       { h: 45, v: 23 }, { h: 30, v: 15 }, { h: 20, v: 10 }, { h: 15, v: 8 }, { h: 10, v: 5 }, { h: 5, v: 3 }
     ];
+    $scope.tabVolumetria = 'hoje';
+    $scope.chartBarsHoje = $scope.chartBars;
+    $scope.chartBars7dias = [
+      { h: 40, v: 20 }, { h: 55, v: 28 }, { h: 70, v: 36 }, { h: 60, v: 31 },
+      { h: 80, v: 41 }, { h: 95, v: 49 }, { h: 85, v: 44 }
+    ];
+    $scope.setTabVolumetria = function (tab) {
+      $scope.tabVolumetria = tab;
+      $scope.chartBars = tab === 'hoje' ? $scope.chartBarsHoje : $scope.chartBars7dias;
+    };
 
     $scope.liveLogs = [
       { ts: '14:32:01', robot: 'Robô Fiscal', msg: 'NF emitida com sucesso — CNPJ 12.345.678/0001-90' },
@@ -232,6 +242,13 @@ angular.module('OrchestratorApp', [])
       $scope.terminalOpen = true;
     };
 
+    $scope.fecharTerminal = function () {
+      $scope.terminalOpen = false;
+      $scope.selectedExec = null;
+    };
+
+    $scope.irParaExecucoes = function () { $scope.page = 'execucoes'; };
+
     $scope.verLog = function (f) {
       $scope.logTarget = f;
       $scope.terminalLogs = fakeLogs;
@@ -241,6 +258,14 @@ angular.module('OrchestratorApp', [])
 
     $scope.filtrarExecucoes = function (ex) {
       if ($scope.filtroStatus && ex.status !== $scope.filtroStatus) return false;
+      if ($scope.filtroEmpresa) {
+        var empNome = $scope.getEmpresaNome($scope.filtroEmpresa);
+        if (ex.empresa.toLowerCase().indexOf(empNome.toLowerCase()) === -1) return false;
+      }
+      if ($scope.filtroRobo) {
+        var roboNome = $scope.getRoboNome($scope.filtroRobo);
+        if (ex.robo.toLowerCase().indexOf(roboNome.toLowerCase()) === -1) return false;
+      }
       return true;
     };
 
