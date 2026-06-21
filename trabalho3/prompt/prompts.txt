@@ -1,4 +1,5 @@
-prompt 1 - você deve desenvolver um sistema web (somente front-end), com o Framework angular sobre o documento enviado, um orquestrador de robôs rpa.
+prompt 1 - você deve desenvolver um sistema web (somente front-end), com o Framework angular sobre o documento enviado, um orquestrador 
+de robôs rpa.
 (o documento contém informações de como planejamos o nosso orquestrador.)
 
 prompt 2- Analise o arquivo @trabalho3/index.html e refatore toda a estilização seguindo boas práticas de desenvolvimento front-end (angular) 
@@ -11,16 +12,23 @@ comportamento atual, somente mova a logica do html para um arquivo js
 
 prompt 5 - Agora voce deve criar uma tela de login seguindo os padrões estipulados no documento e no padrão ja utilizado no index
 
-prompt 4 - Faça a tela seguir os padrões do Material Design 3(M3) fazendo o texto subir para a borda e tendo um input de exemplo nos campos de email e senha.
-Faça com que o botão "Lembrar-me" realmente salve as informações inseridas. No index altere apenas oque eu falar para não mudar nada do codigo.
+prompt 4 - Faça a tela seguir os padrões do Material Design 3(M3) fazendo o texto subir para a borda e tendo um input de exemplo
+ nos campos de email e senha.
+Faça com que o botão "Lembrar-me" realmente salve as informações inseridas. No index altere apenas oque eu falar para não mudar
+ nada do codigo.
 Crie um botão de log out com responsividade com base no M3 que retorne o usuario para a tela de login.
 
-prompt 6 - me ajude em um prompt, tenho esse projeto e atualmente quando vou rodar um robo em uma empresa, preciso escolher por empresa individualmente, por 
-exemplo tenho 10 empresas que quero que o robo x rode, e atualmente vou na no robo e seleciona a primeira 1, depois vou no robo x de novo e seleciono a 2 empresa,
-e o que eu queria ao escolher um robo para roda eu possa escolher mais de uma empresa, em vez de eu selecionar uma por vez, eu possa escolher quantas eu quiser,
-onde eu posso escolher grupos por robo, e cada robo tem aquelas em presa, no caso eu crio um grupo para o robo x e nesse grupo tem as empresa que eu quero que 
+prompt 6 - me ajude em um prompt, tenho esse projeto e atualmente quando vou rodar um robo em uma empresa, preciso escolher por
+ empresa individualmente, por 
+exemplo tenho 10 empresas que quero que o robo x rode, e atualmente vou na no robo e seleciona a primeira 1, depois vou no robo
+ x de novo e seleciono a 2 empresa,
+e o que eu queria ao escolher um robo para roda eu possa escolher mais de uma empresa, em vez de eu selecionar uma por vez, eu
+ possa escolher quantas eu quiser,
+onde eu posso escolher grupos por robo, e cada robo tem aquelas em presa, no caso eu crio um grupo para o robo x e nesse grupo 
+tem as empresa que eu quero que 
 aquele robo rode
-- Aplicação AngularJS 1.x (app.js + index.html) — Orquestrador RPA 2.0. O controller principal é MainCtrl e já existem os arrays $scope.robos, $scope.empresas e $scope.agendamentos.
+- Aplicação AngularJS 1.x (app.js + index.html) — Orquestrador RPA 2.0. O controller principal é MainCtrl e já existem os
+ arrays $scope.robos, $scope.empresas e $scope.agendamentos.
 Feature a implementar: Grupos de Empresas por Robô
 
 1. Nova estrutura de dados — $scope.gruposEmpresa
@@ -32,7 +40,8 @@ js$scope.gruposEmpresa = [
 Cada grupo pertence a um robô (roboId) e contém um array de IDs de empresas (empresaIds).
 
 2. Modal de agendamento — reformular o campo "Empresa"
-No modal modalType === 'agendamento' do index.html, substituir o <select> simples de empresa por um fluxo em duas etapas dentro do mesmo modal:
+No modal modalType === 'agendamento' do index.html, substituir o <select> simples de empresa por um fluxo em duas etapas
+ dentro do mesmo modal:
 Etapa A — escolher como executar:
 
 Dois botões de escolha (radio-style) no início do modal:
@@ -46,7 +55,8 @@ Etapa B — seletor de grupo:
 Quando formAg.modoExecucao === 'grupo':
 
 Um <select> que filtra gruposEmpresa pelo formAg.robo selecionado: ng-repeat="g in gruposEmpresa | filter:{roboId: formAg.robo}"
-Exibir abaixo do select as empresas do grupo selecionado como chips/badges: ng-repeat="eId in getGrupoSelecionado().empresaIds"  usando getEmpresaNome(eId) para mostrar o nome
+Exibir abaixo do select as empresas do grupo selecionado como chips/badges: ng-repeat="eId in getGrupoSelecionado().empresaIds" 
+ usando getEmpresaNome(eId) para mostrar o nome
 Um link/botão pequeno "+ Criar novo grupo para este robô" que abre o modal de criação de grupo (ver item 3)
 
 
@@ -57,7 +67,9 @@ formGrupo.nome — nome do grupo (texto)
 formGrupo.roboId — pré-preenchido com formAg.robo se vier do fluxo de agendamento
 formGrupo.empresaIds — array de IDs selecionados
 
-Para o campo de empresas, renderizar a lista completa de $scope.empresas como checkboxes clicáveis (não <select multiple>), usando ng-repeat="e in empresas" com ng-click="toggleEmpresaGrupo(e.id)" e estado visual ng-class="{selected: formGrupo.empresaIds.indexOf(e.id) > -1}".
+Para o campo de empresas, renderizar a lista completa de $scope.empresas como checkboxes clicáveis (não <select multiple>),
+ usando ng-repeat="e in empresas" com ng-click="toggleEmpresaGrupo(e.id)" e estado visual
+  ng-class="{selected: formGrupo.empresaIds.indexOf(e.id) > -1}".
 Função salvarGrupo():
 js$scope.salvarGrupo = function() {
   if (!$scope.formGrupo.nome || !$scope.formGrupo.roboId) return;
@@ -78,7 +90,8 @@ js$scope.getGrupoSelecionado = function() {
 };
 
 5. Adaptar salvarAgendamento() para batch
-Quando formAg.modoExecucao === 'grupo', iterar sobre as empresas do grupo e criar uma entrada de agendamento por empresa, todas com o mesmo batchId para rastreamento:
+Quando formAg.modoExecucao === 'grupo', iterar sobre as empresas do grupo e criar uma entrada de agendamento por empresa,
+ todas com o mesmo batchId para rastreamento:
 js$scope.salvarAgendamento = function() {
   if ($scope.formAg.modoExecucao === 'grupo') {
     var grupo = $scope.getGrupoSelecionado();
@@ -100,10 +113,12 @@ js$scope.salvarAgendamento = function() {
   }
   $scope.modalOpen = false;
 };
-Na tabela de agendamentos (page === 'agendamentos'), quando a.batchId existir, exibir uma badge "Lote" ao lado do nome do robô e mostrar a.grupoNome na coluna Empresa em vez do nome individual.
+Na tabela de agendamentos (page === 'agendamentos'), quando a.batchId existir, exibir uma badge "Lote" ao lado do nome do robô e
+ mostrar a.grupoNome na coluna Empresa em vez do nome individual.
 
 6. Adaptar executarAgora() para batch
-Quando o agendamento tiver batchId, buscar todos os agendamentos do mesmo batchId e criar uma execução em $scope.execucoes para cada empresa, todas com status: 'running' e um campo batchId compartilhado.
+Quando o agendamento tiver batchId, buscar todos os agendamentos do mesmo batchId e criar uma execução em $scope.execucoes para cada empresa,
+ todas com status: 'running' e um campo batchId compartilhado.
 
 Restrições:
 
@@ -113,7 +128,8 @@ Manter o fluxo individual funcionando exatamente como está
 Seguir o padrão visual existente: classes btn, btn-primary, btn-ghost, badge, toggle, form-group, form-grid
 
 prompt - 8 
-blz, para criar um grupo fica na mesma tela do agendamento, quero que para criar um grupo seja um nova aba embaixo da aba Empresa, e nessa aba eu posso criar um grupo ou excluir e dentro de um grupo
+blz, para criar um grupo fica na mesma tela do agendamento, quero que para criar um grupo seja um nova aba embaixo da aba Empresa,
+ e nessa aba eu posso criar um grupo ou excluir e dentro de um grupo
  posso adicionar uma nova empresa ou remover uma empresa
 
 prompt 6 - Na seção Agendamentos, faça os seguintes ajustes:
@@ -121,7 +137,8 @@ prompt 6 - Na seção Agendamentos, faça os seguintes ajustes:
 * Adicione uma nova coluna chamada Período.
 * Remova a coluna Status atual.
 * Renomeie a coluna Recorrência para Frequência.
-* Abaixo da descrição do agendamento (ex.: "Toda segunda às 09:00"), atualmente aparecem alguns números e caracteres (`****`). Remova essas informações e deixe apenas a descrição da frequência.
+* Abaixo da descrição do agendamento (ex.: "Toda segunda às 09:00"), atualmente aparecem alguns números e caracteres (`****`).
+ Remova essas informações e deixe apenas a descrição da frequência.
 * Adicione uma coluna Usuário, que representa a pessoa responsável por criar ou realizar o agendamento.
 * Na última coluna, adicione Ações/Status, utilizando ícones:
    * ✅ Ícone verde quando o agendamento foi executado com sucesso;
@@ -133,7 +150,8 @@ lembrando que é so front
 
 prompt 7 - Na tela de **Novo Agendamento**, realize os seguintes ajustes:
 
-* Adicione um campo para selecionar um **Grupo de Clientes**. Esse grupo pode ser identificado pelo nome do robô, já que cada robô possui seu conjunto específico de clientes que participarão da execução do agendamento.
+* Adicione um campo para selecionar um **Grupo de Clientes**. Esse grupo pode ser identificado pelo nome do robô, já que
+ cada robô possui seu conjunto específico de clientes que participarão da execução do agendamento.
 * Remova o campo **"Expressão Cron (gerada automaticamente)"**, pois essa informação não precisa ser exibida ao usuário.
 * Adicione os campos:
 
@@ -157,7 +175,71 @@ prompt 8 - Na seção **Empresas**, inclua os seguintes campos para cadastro e v
 * **Senha**
 * **Frase Secreta**
 
-Organize os campos de forma clara e intuitiva, agrupando as informações cadastrais, tributárias e de acesso quando fizer sentido. Para os campos **Senha** e **Frase Secreta**, utilize componentes apropriados para dados sensíveis, permitindo ocultar ou visualizar o conteúdo conforme a necessidade do usuário.
+Organize os campos de forma clara e intuitiva, agrupando as informações cadastrais, tributárias e de acesso quando fizer sentido.
+Para os campos **Senha** e **Frase Secreta**, utilize componentes apropriados para dados sensíveis, permitindo ocultar ou
+ visualizar o conteúdo conforme a necessidade do usuário.
 
 Mantenha o restante da estrutura e funcionalidades da seção **Empresas** sem alterações, adicionando apenas os campos listados acima.
 
+prompt 9 - Tela de Histórico de Execuções
+Implementar os filtros usando apenas front:
+
+* Status:
+   * Todos
+   * Sucesso
+   * Processando
+   * Erro
+* Empresa:
+   * Listar dinamicamente as empresas cadastradas.
+* Robô:
+   * Listar dinamicamente os robôs cadastrados.
+Os filtros devem atualizar a tabela.
+Caso não existam resultados, exibir:
+"Nenhum resultado encontrado. Tente alterar os filtros."
+
+prompt 10 - Visualização de Log
+
+A funcionalidade "Ver Log" já existe, porém o usuário não consegue navegar pelo conteúdo.
+
+Corrigir:
+
+Permitir scroll vertical no container do log.
+Definir altura máxima adequada.
+Manter o estilo visual atual.
+
+Também adicionar:
+
+Botão "Copiar Log".
+Destaque visual para níveis de log:
+INFO → azul
+WARN → amarelo
+ERROR → vermelho
+SUCCESS → verde
+
+prompt 11 - Download do Log
+
+Implementar o botão "Baixar .txt".
+
+Ao clicar:
+
+Gerar um arquivo .txt contendo o conteúdo do log.
+
+Nome sugerido:
+
+execucao-{id}.txt
+
+prompt 11 - Gestão de Empresas
+
+Remover a coluna:
+
+Moeda
+
+prompt 12 - remover no cadastro de empresa Variação Monetária e também quando estiver preenchendo já ir colocando no formato esperado 
+
+prompt 13 - Tela de Grupos de Empresas
+
+Melhorar a tabela apenas usando fornt
+
+Adicionar coluna:
+
+Quantidade de empresas

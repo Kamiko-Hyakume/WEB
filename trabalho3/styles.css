@@ -1,3 +1,7 @@
+html {
+  height: 100%;
+}
+
 :root {
   --bg: #0a0c10;
   --bg2: #111318;
@@ -33,7 +37,7 @@ body {
   color: var(--text);
   font-family: var(--font);
   font-size: 14px;
-  min-height: 100vh;
+  height: 100vh;
   display: flex;
   overflow: hidden;
 }
@@ -206,6 +210,7 @@ body {
   flex: 1;
   display: flex;
   flex-direction: column;
+  height: 100vh;
   overflow: hidden;
 }
 
@@ -287,6 +292,7 @@ body {
   flex: 1;
   overflow-y: auto;
   padding: 24px;
+  min-height: 0;
 }
 
 /* CARDS */
@@ -629,28 +635,74 @@ textarea { resize: vertical; min-height: 80px; }
   display: block;
 }
 
-/* TERMINAL */
+/* ======================== TERMINAL ======================== */
+
 .terminal {
   background: #060809;
   border-radius: var(--r2);
   padding: 14px;
   font-family: var(--mono);
   font-size: 12px;
-  line-height: 1.7;
+  line-height: 1.8;
   border: 1px solid var(--border);
   min-height: 200px;
-  max-height: 380px;
-  overflow-y: auto;
 }
 
-.log-line { display: flex; gap: 12px; }
-.log-ts { color: var(--text3); flex-shrink: 0; }
-.log-level { flex-shrink: 0; font-weight: 700; min-width: 48px; }
-.log-level.info { color: var(--accent); }
-.log-level.success { color: var(--green); }
-.log-level.error { color: var(--red); }
-.log-level.warn { color: var(--amber); }
-.log-msg { color: #c8d0e0; }
+/* Variante com scroll — usada no log viewer */
+.terminal--scrollable {
+  max-height: 400px;
+  overflow-y: auto;
+  /* scrollbar fina dentro do terminal */
+  scrollbar-width: thin;
+  scrollbar-color: var(--border2) transparent;
+}
+
+.terminal--scrollable::-webkit-scrollbar { width: 5px; }
+.terminal--scrollable::-webkit-scrollbar-track { background: transparent; }
+.terminal--scrollable::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+
+.log-line {
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+  padding: 2px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.025);
+}
+
+.log-line:last-child { border-bottom: none; }
+
+.log-ts {
+  color: var(--text3);
+  flex-shrink: 0;
+  font-size: 11px;
+}
+
+/* ── Badges de nível (substituem o texto simples) ── */
+.log-level--badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  min-width: 54px;
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+
+.log-badge--info    { background: rgba(79,142,247,.15);  color: var(--accent); border: 1px solid rgba(79,142,247,.3); }
+.log-badge--warn    { background: rgba(245,166,35,.15);  color: var(--amber);  border: 1px solid rgba(245,166,35,.3); }
+.log-badge--error   { background: rgba(240,87,87,.15);   color: var(--red);    border: 1px solid rgba(240,87,87,.3);  }
+.log-badge--success { background: rgba(34,211,160,.15);  color: var(--green);  border: 1px solid rgba(34,211,160,.3); }
+
+/* Cor da mensagem de acordo com o nível */
+.log-msg { flex: 1; word-break: break-all; }
+
+.log-msg--info    { color: #c8d0e0; }
+.log-msg--warn    { color: #f5c97a; }
+.log-msg--error   { color: #f09090; }
+.log-msg--success { color: #6ee7c6; }
 
 /* MODAL */
 .modal-overlay {
@@ -961,7 +1013,7 @@ textarea { resize: vertical; min-height: 80px; }
 .filter-group { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 
 .select--sm { width: 140px; }
-.select--md { width: 160px; }
+.select--md { width: 180px; }
 
 .error-text--sm { color: var(--red); font-size: 12px; }
 
@@ -975,10 +1027,10 @@ textarea { resize: vertical; min-height: 80px; }
 
 .action-group { display: flex; gap: 6px; }
 .action-group--center { align-items: center; }
-.btn-group { display: flex; gap: 8px; }
+.btn-group { display: flex; gap: 8px; align-items: center; }
 
 .terminal-section { margin-top: 20px; }
-.table-title--mono { font-family: var(--mono); }
+.table-title--mono { font-family: var(--mono); font-size: 12px; }
 
 .icon-sm { width: 13px; height: 13px; }
 .icon-xs { width: 12px; height: 12px; }
@@ -1055,7 +1107,7 @@ textarea { resize: vertical; min-height: 80px; }
 .perm-allowed { color: var(--green); }
 .perm-denied { color: var(--text3); }
 
-.modal-title--mono { font-family: var(--mono); }
+.modal-title--mono { font-family: var(--mono); font-size: 13px; }
 
 .progress-fill--success { background: var(--green); }
 .progress-fill--warning { background: var(--amber); }
@@ -1115,7 +1167,7 @@ textarea { resize: vertical; min-height: 80px; }
 .btn-logout:hover { color: var(--text); }
 .btn-logout svg { width: 16px; height: 16px; }
 
-/* Campo hint — texto auxiliar inline no label */
+/* Campo hint */
 .field-hint {
   font-size: 11px;
   color: var(--text3);
@@ -1123,5 +1175,5 @@ textarea { resize: vertical; min-height: 80px; }
   margin-left: 4px;
 }
 
-/* Input date styling consistente */
+/* Input date styling */
 input[type="date"] { color-scheme: dark; }
