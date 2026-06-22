@@ -181,6 +181,9 @@ Para os campos **Senha** e **Frase Secreta**, utilize componentes apropriados pa
 
 Mantenha o restante da estrutura e funcionalidades da seção **Empresas** sem alterações, adicionando apenas os campos listados acima.
 
+prompt 9 -  pode remover a tela de parametros
+            catalago de robôs muda so para robôs
+            deixe apenas o botão de editar na tela de controle de acesso e faça com que o mesmo funcione
 prompt 9 - Tela de Histórico de Execuções
 Implementar os filtros usando apenas front:
 
