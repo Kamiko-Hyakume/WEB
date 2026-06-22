@@ -26,6 +26,7 @@ angular.module('OrchestratorApp', [])
     $scope.filtroStatus = '';
     $scope.filtroEmpresa = '';
     $scope.filtroRobo = '';
+    $scope.logCopiado = false;
     $scope.formAg = { dias: {}, cronExpr: '0 8 * * 1-5', hora: '08:00', repeticao: 'weekly', grupoClientes: '', periodoInicial: '', periodoFinal: '' };
     $scope.grupoClientesDisponiveis = [];
     $scope.formEmpresa = {};
@@ -46,6 +47,16 @@ angular.module('OrchestratorApp', [])
       { h: 60, v: 31 }, { h: 75, v: 38 }, { h: 80, v: 41 }, { h: 72, v: 37 }, { h: 65, v: 33 }, { h: 55, v: 28 },
       { h: 45, v: 23 }, { h: 30, v: 15 }, { h: 20, v: 10 }, { h: 15, v: 8 }, { h: 10, v: 5 }, { h: 5, v: 3 }
     ];
+    $scope.tabVolumetria = 'hoje';
+    $scope.chartBarsHoje = $scope.chartBars;
+    $scope.chartBars7dias = [
+      { h: 40, v: 20 }, { h: 55, v: 28 }, { h: 70, v: 36 }, { h: 60, v: 31 },
+      { h: 80, v: 41 }, { h: 95, v: 49 }, { h: 85, v: 44 }
+    ];
+    $scope.setTabVolumetria = function (tab) {
+      $scope.tabVolumetria = tab;
+      $scope.chartBars = tab === 'hoje' ? $scope.chartBarsHoje : $scope.chartBars7dias;
+    };
 
     $scope.liveLogs = [
       { ts: '14:32:01', robot: 'Robô Fiscal', msg: 'NF emitida com sucesso — CNPJ 12.345.678/0001-90' },
@@ -128,14 +139,14 @@ angular.module('OrchestratorApp', [])
     ];
 
     $scope.execucoes = [
-      { id: '8821', robo: 'Robô Fiscal — Emitir NF', empresa: 'Acme Corp', inicio: '14:32:01', duracao: '00:01:23', status: 'success', statusLabel: 'Sucesso' },
-      { id: '8820', robo: 'Robô Comercial — Leads', empresa: 'Beta Ltda', inicio: '14:30:15', duracao: '00:00:47', status: 'running', statusLabel: 'Processando' },
-      { id: '8819', robo: 'Robô Financeiro', empresa: 'Acme Corp', inicio: '14:28:03', duracao: '00:05:11', status: 'error', statusLabel: 'Erro' },
-      { id: '8818', robo: 'Robô RH — Folha', empresa: 'Gamma S/A', inicio: '14:20:00', duracao: '00:03:42', status: 'success', statusLabel: 'Sucesso' },
-      { id: '8817', robo: 'Robô Logística', empresa: 'Delta ME', inicio: '14:15:30', duracao: '00:00:58', status: 'success', statusLabel: 'Sucesso' },
-      { id: '8816', robo: 'Robô Fiscal — SPED', empresa: 'Epsilon Ltda', inicio: '13:55:17', duracao: '00:02:30', status: 'error', statusLabel: 'Erro' },
-      { id: '8815', robo: 'Robô Comercial — Leads', empresa: 'Gamma S/A', inicio: '13:40:00', duracao: '00:01:12', status: 'success', statusLabel: 'Sucesso' },
-      { id: '8814', robo: 'Robô Fiscal — Emitir NF', empresa: 'Beta Ltda', inicio: '12:30:00', duracao: '00:01:05', status: 'success', statusLabel: 'Sucesso' },
+      { id: '8821', robo: 'Robô Fiscal — Emitir NF',         roboId: 'r1', empresaId: 'e1', empresa: 'Acme Corp',   inicio: '14:32:01', duracao: '00:01:23', status: 'success', statusLabel: 'Sucesso' },
+      { id: '8820', robo: 'Robô Comercial — Leads',          roboId: 'r2', empresaId: 'e2', empresa: 'Beta Ltda',   inicio: '14:30:15', duracao: '00:00:47', status: 'running', statusLabel: 'Processando' },
+      { id: '8819', robo: 'Robô Financeiro — Conciliação',   roboId: 'r3', empresaId: 'e1', empresa: 'Acme Corp',   inicio: '14:28:03', duracao: '00:05:11', status: 'error',   statusLabel: 'Erro' },
+      { id: '8818', robo: 'Robô RH — Folha Pagamento',       roboId: 'r4', empresaId: 'e3', empresa: 'Gamma S/A',   inicio: '14:20:00', duracao: '00:03:42', status: 'success', statusLabel: 'Sucesso' },
+      { id: '8817', robo: 'Robô Logística — Rastreamento',   roboId: 'r5', empresaId: 'e4', empresa: 'Delta ME',    inicio: '14:15:30', duracao: '00:00:58', status: 'success', statusLabel: 'Sucesso' },
+      { id: '8816', robo: 'Robô Fiscal — SPED',              roboId: 'r6', empresaId: 'e5', empresa: 'Epsilon Ltda',inicio: '13:55:17', duracao: '00:02:30', status: 'error',   statusLabel: 'Erro' },
+      { id: '8815', robo: 'Robô Comercial — Leads',          roboId: 'r2', empresaId: 'e3', empresa: 'Gamma S/A',   inicio: '13:40:00', duracao: '00:01:12', status: 'success', statusLabel: 'Sucesso' },
+      { id: '8814', robo: 'Robô Fiscal — Emitir NF',         roboId: 'r1', empresaId: 'e2', empresa: 'Beta Ltda',   inicio: '12:30:00', duracao: '00:01:05', status: 'success', statusLabel: 'Sucesso' },
     ];
 
     $scope.terminalLogs = [];
@@ -210,34 +221,141 @@ angular.module('OrchestratorApp', [])
     ];
 
     var fakeLogs = [
-      { ts: '14:28:01', level: 'info', msg: 'Iniciando execução — Robô Financeiro v2.1.0' },
-      { ts: '14:28:02', level: 'info', msg: 'Conectando ao banco de dados — host:erp.acme.com:5432' },
-      { ts: '14:28:04', level: 'info', msg: 'Autenticando com credenciais do cofre (AES-256)' },
-      { ts: '14:28:06', level: 'warn', msg: 'Tempo de resposta elevado — 2800ms (threshold: 2000ms)' },
-      { ts: '14:28:09', level: 'info', msg: 'Executando query de conciliação — período: 01/06-08/06' },
-      { ts: '14:28:15', level: 'error', msg: 'FATAL: Connection timeout após 5000ms — retry 1/3' },
-      { ts: '14:28:20', level: 'error', msg: 'FATAL: Connection timeout após 5000ms — retry 2/3' },
-      { ts: '14:28:25', level: 'error', msg: 'FATAL: Connection timeout após 5000ms — retry 3/3' },
-      { ts: '14:28:25', level: 'error', msg: 'Execução encerrada com FAILED — código de saída: 1' },
+      { ts: '14:28:01', level: 'info',    msg: 'Iniciando execução — Robô Financeiro v2.1.0' },
+      { ts: '14:28:02', level: 'info',    msg: 'Conectando ao banco de dados — host:erp.acme.com:5432' },
+      { ts: '14:28:04', level: 'info',    msg: 'Autenticando com credenciais do cofre (AES-256)' },
+      { ts: '14:28:06', level: 'warn',    msg: 'Tempo de resposta elevado — 2800ms (threshold: 2000ms)' },
+      { ts: '14:28:09', level: 'info',    msg: 'Executando query de conciliação — período: 01/06-08/06' },
+      { ts: '14:28:15', level: 'error',   msg: 'FATAL: Connection timeout após 5000ms — retry 1/3' },
+      { ts: '14:28:20', level: 'error',   msg: 'FATAL: Connection timeout após 5000ms — retry 2/3' },
+      { ts: '14:28:25', level: 'error',   msg: 'FATAL: Connection timeout após 5000ms — retry 3/3' },
+      { ts: '14:28:25', level: 'error',   msg: 'Execução encerrada com FAILED — código de saída: 1' },
     ];
 
     $scope.abrirTerminal = function (ex) {
       $scope.selectedExec = ex;
       $scope.terminalLogs = fakeLogs;
       $scope.terminalOpen = true;
+      $scope.logCopiado = false;
     };
+
+    $scope.fecharTerminal = function () {
+      $scope.terminalOpen = false;
+      $scope.selectedExec = null;
+      $scope.logCopiado = false;
+    };
+
+    $scope.irParaExecucoes = function () { $scope.page = 'execucoes'; };
 
     $scope.verLog = function (f) {
       $scope.logTarget = f;
       $scope.terminalLogs = fakeLogs;
       $scope.modalType = 'log';
       $scope.modalOpen = true;
+      $scope.logCopiado = false;
     };
 
+    // ── COPIAR LOG ────────────────────────────────────────────────────────────
+    $scope.copiarLog = function () {
+      var texto = $scope.terminalLogs.map(function (l) {
+        return '[' + l.ts + '] ' + l.level.toUpperCase() + '  ' + l.msg;
+      }).join('\n');
+
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(texto).then(function () {
+          $scope.logCopiado = true;
+          $scope.$applyAsync(function () {
+            setTimeout(function () {
+              $scope.logCopiado = false;
+              $scope.$apply();
+            }, 2000);
+          });
+        });
+      } else {
+        // fallback para browsers sem Clipboard API
+        var el = document.createElement('textarea');
+        el.value = texto;
+        document.body.appendChild(el);
+        el.select();
+        document.execCommand('copy');
+        document.body.removeChild(el);
+        $scope.logCopiado = true;
+        setTimeout(function () {
+          $scope.logCopiado = false;
+          $scope.$apply();
+        }, 2000);
+      }
+    };
+    // ─────────────────────────────────────────────────────────────────────────
+
+    // ── BAIXAR LOG (.txt) ────────────────────────────────────────────────────
+    // Gera um arquivo .txt com o conteúdo do log atualmente exibido (terminalLogs)
+    // e dispara o download no navegador. Nome sugerido: execucao-{id}.txt
+    $scope.baixarLog = function (id) {
+      var logs = $scope.terminalLogs || [];
+      var texto = logs.map(function (l) {
+        return '[' + l.ts + '] ' + l.level.toUpperCase() + '  ' + l.msg;
+      }).join('\n');
+
+      var idRef = id || (($scope.selectedExec && $scope.selectedExec.id) || ($scope.logTarget && $scope.logTarget.robot)) || 'log';
+      // sanitiza para um nome de arquivo seguro
+      idRef = String(idRef).replace(/[^a-z0-9_\-]+/gi, '-');
+      var nomeArquivo = 'execucao-' + idRef + '.txt';
+
+      var blob = new Blob([texto], { type: 'text/plain;charset=utf-8' });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = nomeArquivo;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    };
+    // ─────────────────────────────────────────────────────────────────────────
+
+    // ── FILTRO DE EXECUÇÕES ───────────────────────────────────────────────────
+    // CORREÇÃO: expor os filtros como propriedades do objeto filtros para que
+    // o AngularJS detecte a dependência no digest cycle quando usamos
+    // filter:filtrarExecucoes. A função acessa $scope.filtroStatus etc.
+    // diretamente — isso já deveria funcionar. O problema real era que os
+    // <option value="{{e.id}}"> produzem strings, e a comparação era correta,
+    // MAS o filtro personalizado não força re-avaliação automática em alguns
+    // casos. Solução: usar ng-value nos options (garante binding sem
+    // interpolação) e manter a função de filtro como está.
     $scope.filtrarExecucoes = function (ex) {
       if ($scope.filtroStatus && ex.status !== $scope.filtroStatus) return false;
+
+      if ($scope.filtroEmpresa) {
+        if (ex.empresaId) {
+          if (ex.empresaId !== $scope.filtroEmpresa) return false;
+        } else {
+          var empNome = ($scope.getEmpresaNome($scope.filtroEmpresa) || '').toLowerCase();
+          var exEmp   = (ex.empresa || '').toLowerCase();
+          if (empNome && exEmp.indexOf(empNome) === -1 && empNome.indexOf(exEmp) === -1) return false;
+        }
+      }
+
+      if ($scope.filtroRobo) {
+        if (ex.roboId) {
+          if (ex.roboId !== $scope.filtroRobo) return false;
+        } else {
+          var roboNome = ($scope.getRoboNome($scope.filtroRobo) || '').toLowerCase();
+          var exRobo   = (ex.robo || '').toLowerCase();
+          if (roboNome && exRobo.indexOf(roboNome) === -1 && roboNome.indexOf(exRobo) === -1) return false;
+        }
+      }
+
       return true;
     };
+
+    // Versão computada reativa — usa $scope vars para forçar reavaliação
+    $scope.execucoesFiltradas = function () {
+      return $scope.execucoes.filter(function (ex) {
+        return $scope.filtrarExecucoes(ex);
+      });
+    };
+    // ─────────────────────────────────────────────────────────────────────────
 
     $scope.openModal = function (type) {
       $scope.modalType = type;
@@ -245,6 +363,7 @@ angular.module('OrchestratorApp', [])
       $scope.editando = false;
       $scope.showSenha = false;
       $scope.showFrase = false;
+      $scope.logCopiado = false;
       $scope.formEmpresa = {};
       $scope.formRobo = {};
       $scope.formUser = { nivel: 'viewer' };
@@ -257,6 +376,7 @@ angular.module('OrchestratorApp', [])
         $scope.modalOpen = false;
         $scope.showSenha = false;
         $scope.showFrase = false;
+        $scope.logCopiado = false;
       }
     };
 
@@ -298,7 +418,6 @@ angular.module('OrchestratorApp', [])
           regimeTributario: $scope.formEmpresa.regimeTributario || '',
           optante: $scope.formEmpresa.optante || '',
           pisPasep: $scope.formEmpresa.pisPasep || '',
-          variacaoMonetaria: $scope.formEmpresa.variacaoMonetaria || '',
           numeroConta: $scope.formEmpresa.numeroConta || '',
           senha: $scope.formEmpresa.senha || '',
           fraseSecreta: $scope.formEmpresa.fraseSecreta || '',
@@ -395,6 +514,7 @@ angular.module('OrchestratorApp', [])
       $scope.execucoes.unshift({
         id: String(parseInt(ex.id) + Math.floor(Math.random() * 10)),
         robo: ex.robo, empresa: ex.empresa,
+        roboId: ex.roboId, empresaId: ex.empresaId,
         inicio: new Date().toTimeString().slice(0, 8),
         duracao: '00:00:00', status: 'running', statusLabel: 'Processando'
       });
@@ -469,11 +589,42 @@ angular.module('OrchestratorApp', [])
       $scope.formAg.cronExpr = h[1] + ' ' + h[0] + ' * * ' + (dias || '*');
     };
 
-    // Extrai apenas a sigla da moeda para exibição na tabela
     $scope.moedaSigla = function (str) {
       if (!str) return '—';
       return str.split(' ')[0];
     };
+
+    // ── MÁSCARAS DE CAMPOS (CNPJ, IE, PIS/PASEP) ───────────────────────────────
+    // Formata o valor digitado no padrão esperado em tempo real,
+    // mantendo apenas os dígitos e aplicando a pontuação correta.
+    $scope.mascaraCNPJ = function (v) {
+      if (!v) return v;
+      var d = v.replace(/\D/g, '').slice(0, 14);
+      d = d.replace(/^(\d{2})(\d)/, '$1.$2');
+      d = d.replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3');
+      d = d.replace(/\.(\d{3})(\d)/, '.$1/$2');
+      d = d.replace(/(\d{4})(\d)/, '$1-$2');
+      return d;
+    };
+
+    $scope.mascaraIE = function (v) {
+      if (!v) return v;
+      var d = v.replace(/\D/g, '').slice(0, 12);
+      d = d.replace(/(\d{3})(\d)/, '$1.$2');
+      d = d.replace(/(\d{3})\.(\d{3})(\d)/, '$1.$2.$3');
+      d = d.replace(/(\d{3})\.(\d{3})\.(\d{3})(\d)/, '$1.$2.$3.$4');
+      return d;
+    };
+
+    $scope.mascaraPIS = function (v) {
+      if (!v) return v;
+      var d = v.replace(/\D/g, '').slice(0, 11);
+      d = d.replace(/(\d{3})(\d)/, '$1.$2');
+      d = d.replace(/(\d{3})\.(\d{5})(\d)/, '$1.$2.$3');
+      d = d.replace(/(\d{3})\.(\d{5})\.(\d{2})(\d)/, '$1.$2.$3-$4');
+      return d;
+    };
+    // ─────────────────────────────────────────────────────────────────────────
 
     var msgs = [
       ['Robô Fiscal', 'NF #00043521 emitida — OK'],
